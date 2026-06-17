@@ -1,0 +1,77 @@
+{% extends "navigator/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Sign in" %} — Konya{% endblock %}
+
+{% block content %}
+{% include "navigator/_auth_cancel.html" %}
+<section class="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4 pb-10 pt-14 sm:px-6 sm:py-10 sm:pt-10">
+    <header class="mb-8 text-center">
+        <h1 class="font-serif text-2xl font-medium tracking-tight text-[#0F172A] sm:text-3xl">{% trans "Welcome back" %}</h1>
+        <p class="mt-2 text-sm leading-relaxed text-[#0F172A]/60">{% trans "Sign in to continue your navigations." %}</p>
+    </header>
+
+    <form method="post" novalidate class="space-y-5">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="rounded-md bg-[#F1F5F9] px-4 py-3 text-sm text-[#0F172A]/80 shadow-none border-0 border-transparent">
+                {{ form.non_field_errors.0 }}
+            </div>
+        {% endif %}
+
+        <div class="space-y-2">
+            <label for="{{ form.email.id_for_label }}" class="block text-xs font-medium uppercase tracking-wider text-[#0F172A]/50">
+                {% trans "Email" %}
+            </label>
+            <input
+                type="text"
+                name="email"
+                id="{{ form.email.id_for_label }}"
+                value="{{ form.email.value|default:'' }}"
+                autocomplete="email"
+                placeholder="you@example.com"
+                required
+                class="w-full rounded-md border border-gray-300 bg-[#F8FAFC] px-4 py-3 text-sm text-[#0F172A] placeholder:text-[#0F172A]/40 shadow-none outline-none transition-colors focus:border-[#0F172A]"
+            >
+            {% if form.email.errors %}
+                <p class="text-xs text-[#0F172A]/70">{{ form.email.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <div class="space-y-2">
+            <label for="{{ form.password.id_for_label }}" class="block text-xs font-medium uppercase tracking-wider text-[#0F172A]/50">
+                {% trans "Password" %}
+            </label>
+            <input
+                type="password"
+                name="password"
+                id="{{ form.password.id_for_label }}"
+                autocomplete="current-password"
+                placeholder="{% trans 'Password' %}"
+                required
+                class="w-full rounded-md border border-gray-300 bg-[#F8FAFC] px-4 py-3 text-sm text-[#0F172A] placeholder:text-[#0F172A]/40 shadow-none outline-none transition-colors focus:border-[#0F172A]"
+            >
+            {% if form.password.errors %}
+                <p class="text-xs text-[#0F172A]/70">{{ form.password.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <button
+            type="submit"
+            class="w-full rounded-md bg-[#2563EB] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[#1D4ED8] shadow-none border-0 border-transparent"
+        >
+            {% trans "Sign in" %}
+        </button>
+    </form>
+
+    <p class="mt-8 text-center text-sm text-[#0F172A]/60">
+        {% trans "New to Konya?" %}
+        <a href="{% url 'accounts:signup' %}" class="font-medium text-[#0F172A] no-underline transition-opacity hover:opacity-70">
+            {% trans "Create an account" %}
+        </a>
+    </p>
+
+    {% include "navigator/_oauth_buttons.html" with oauth_disabled=True oauth_footer=True %}
+</section>
+{% endblock %}

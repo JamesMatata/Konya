@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+{% load i18n %}
+<html lang="{{ current_language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Konya{% endblock %}</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['Lora', 'Georgia', 'serif'],
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            },
+        };
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:wght@400;500;600&display=swap"
+        rel="stylesheet"
+    >
+
+    <style>
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: #0F172A transparent;
+        }
+
+        html::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+
+        html::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        html::-webkit-scrollbar-thumb {
+            background-color: #0F172A;
+            border-radius: 9999px;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        h1, h2, h3, h4, h5, h6,
+        .font-heading {
+            font-family: 'Lora', Georgia, serif;
+        }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans antialiased">
+    <div class="absolute right-3 top-3 z-10 sm:right-4 sm:top-4">
+        {% include "navigator/_language_switcher_light.html" %}
+    </div>
+    {% block content %}{% endblock %}
+</body>
+</html>

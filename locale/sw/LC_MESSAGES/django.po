@@ -1,0 +1,823 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Konya\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-15 20:00+0300\n"
+"Language: sw\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: .\navigator\document_files.py:38
+msgid "Upload a supported policy document (PDF, Word, text, or image)."
+msgstr ""
+
+#: .\navigator\forms.py:11 .\navigator\templates\navigator\launchpad.html:27
+msgid "Your situation"
+msgstr "Hali yako"
+
+#: .\navigator\forms.py:15 .\navigator\templates\navigator\launchpad.html:34
+msgid "Describe your personal situation, goals, or the guidance you need…"
+msgstr "Eleza hali yako, malengo, au mwelekezo unaohitaji…"
+
+#: .\navigator\forms.py:20 .\navigator\forms.py:55
+#: .\navigator\templates\navigator\launchpad.html:44
+msgid "Policy link"
+msgstr "Kiungo cha sera"
+
+#: .\navigator\forms.py:29 .\navigator\forms.py:64
+#: .\navigator\templates\navigator\launchpad.html:62
+msgid "Policy document"
+msgstr "Hati ya sera"
+
+#: .\navigator\forms.py:43
+#, fuzzy
+#| msgid ""
+#| "Provide a policy link or upload a PDF document — at least one is required."
+msgid ""
+"Provide a policy link or upload a policy document — at least one is required."
+msgstr "Toa kiungo cha sera au pakia hati ya PDF — angalau moja inahitajika."
+
+#: .\navigator\forms.py:77
+#, fuzzy
+#| msgid "Provide a policy link or upload a PDF document."
+msgid "Provide a policy link or upload a policy document."
+msgstr "Toa kiungo cha sera au pakia hati ya PDF."
+
+#: .\navigator\forms.py:99 .\navigator\forms.py:122
+#: .\navigator\templates\navigator\login.html:44
+#: .\navigator\templates\navigator\login.html:51
+#: .\navigator\templates\navigator\signup.html:51
+msgid "Password"
+msgstr "Nywila"
+
+#: .\navigator\forms.py:107
+msgid "Enter a valid email address."
+msgstr "Weka anwani halali ya barua pepe."
+
+#: .\navigator\forms.py:113 .\navigator\templates\navigator\login.html:25
+#: .\navigator\templates\navigator\signup.html:32
+msgid "Email"
+msgstr "Barua pepe"
+
+#: .\navigator\forms.py:126
+msgid "Any password for testing"
+msgstr "Nywila yoyote kwa majaribio"
+
+#: .\navigator\forms.py:134
+msgid "Enter a basic email address (e.g. test@example.com)."
+msgstr "Weka anwani ya msingi ya barua pepe (mf. test@example.com)."
+
+#: .\navigator\forms.py:136
+msgid "An account with this email already exists."
+msgstr "Akaunti yenye barua pepe hii tayari ipo."
+
+#: .\navigator\forms.py:142
+msgid "Enter a password."
+msgstr "Weka nywila."
+
+#: .\navigator\services\featherless_ai.py:24
+msgid "I'm sorry, I lost my connection for a moment. Could we try that again?"
+msgstr "Samahani, nilipoteza muunganisho kwa muda. Tungejaribu tena?"
+
+#: .\navigator\services\featherless_ai.py:269
+msgid "it does not appear to address your stated situation"
+msgstr "haionekani kushughulikia hali uliyoeleza"
+
+#: .\navigator\services\featherless_ai.py:272
+#, python-format
+msgid ""
+"The document you provided does not seem to contain the right information for "
+"your situation because %(reason)s."
+msgstr ""
+"Hati uliyotoa haionekani kuwa na taarifa sahihi kwa hali yako kwa sababu "
+"%(reason)s."
+
+#: .\navigator\services\featherless_ai.py:278
+msgid ""
+"This document also doesn't seem to match. Try searching the official portal "
+"for your program or looking for eligibility guidelines and application "
+"requirements."
+msgstr ""
+"Hati hii pia haionekani kufanana. Jaribu kutafuta tovuti rasmi ya programu "
+"yako au miongozo ya ustahili na mahitaji ya maombi."
+
+#: .\navigator\services\featherless_ai.py:283
+msgid ""
+"We've tried several documents that still don't match your situation. Please "
+"look for the official program page, eligibility guidelines, or application "
+"requirements from a trusted government or institution source."
+msgstr ""
+"Tumejaribu hati kadhaa ambazo bado hazifanani na hali yako. Tafadhali tafuta "
+"ukurasa rasmi wa programu, miongozo ya ustahili, au mahitaji ya maombi kutoka "
+"kwenye chanzo cha kuaminika cha serikali au taasisi."
+
+#: .\navigator\services\featherless_ai.py:292
+msgid ""
+"I couldn't extract clear eligibility rules from this document. Please try a "
+"more complete policy page, official program guidelines, or a readable PDF/"
+"Word document."
+msgstr ""
+"Sikuweza kutoa sheria wazi za ustahili kutoka kwenye hati hii. Tafadhali jaribu "
+"ukurasa kamili wa sera, miongozo rasmi ya programu, au hati ya PDF/Word "
+"inayosomeka."
+
+#: .\navigator\services\featherless_ai.py:692
+msgid "I've reviewed your policy document against what you've shared so far."
+msgstr "Nimekagua hati yako ya sera ukilinganisha na ulichoeleza hadi sasa."
+
+#: .\navigator\services\featherless_ai.py:696
+#, python-format
+msgid "Thanks — that clarifies %(label)s."
+msgstr "Asante — hilo linaeleza %(label)s."
+
+#: .\navigator\services\featherless_ai.py:698
+msgid "Thanks — that helps clarify several of these points."
+msgstr "Asante — hilo linasaidia kueleza mambo kadhaa kati ya haya."
+
+#: .\navigator\services\featherless_ai.py:708
+#, python-format
+msgid "Can you confirm: %(label)s?"
+msgstr "Unaweza kuthibitisha: %(label)s?"
+
+#: .\navigator\services\featherless_ai.py:711
+msgid ""
+"To check your eligibility based on this document, I need to know a few "
+"specific things:"
+msgstr ""
+"Ili kuangalia ustahili wako kulingana na hati hii, nahitaji kujua mambo "
+"machache maalum:"
+
+#: .\navigator\services\featherless_ai.py:717
+#, python-format
+msgid "* …and %(count)s other requirement(s)."
+msgstr "* …na mahitaji %(count)s mengine."
+
+#: .\navigator\services\featherless_ai.py:720
+msgid "Please provide these details in your next message."
+msgstr "Tafadhali toa maelezo haya katika ujumbe wako ujao."
+
+#: .\navigator\services\featherless_ai.py:1293
+msgid ""
+"I can't answer that safely from the policy document alone. Please check the "
+"official program website or contact the relevant office for confirmation."
+msgstr ""
+"Siwezi kujibu hilo kwa usalama kutoka kwenye hati ya sera peke yake. Tafadhali "
+"angalia tovuti rasmi ya programu au wasiliana na ofisi husika kwa uthibitisho."
+
+#: .\navigator\services\featherless_ai.py:277
+msgid "Could not parse the relevance evaluation."
+msgstr "Haikuwezekana kuchambua tathmini ya umuhimu."
+
+#: .\navigator\services\featherless_ai.py:354
+msgid "no readable policy text could be extracted from the submission"
+msgstr "hakuna maandishi ya sera yanayosomeka yaliyoweza kutolewa kutoka kwa uwasilishaji"
+
+#: .\navigator\services\featherless_ai.py:1324
+msgid ""
+"I don't have the policy document available to answer that safely. Please check "
+"the official program website or contact the relevant office directly."
+msgstr ""
+"Sina hati ya sera inayopatikana kujibu hilo kwa usalama. Tafadhali angalia "
+"tovuti rasmi ya programu au wasiliana na ofisi husika moja kwa moja."
+
+#: .\navigator\templates\navigator\_app_sidebar.html:16
+#: .\navigator\templates\navigator\_app_sidebar.html:17
+#: .\navigator\templates\navigator\_mobile_about_link.html:5
+#: .\navigator\templates\navigator\_mobile_about_link.html:6
+#: .\navigator\templates\navigator\about.html:4
+#: .\navigator\templates\navigator\about.html:11
+msgid "About Konya"
+msgstr "Kuhusu Konya"
+
+#: .\navigator\templates\navigator\_app_sidebar.html:27
+msgid "Close menu"
+msgstr "Funga menyu"
+
+#: .\navigator\templates\navigator\_app_sidebar.html:47
+msgid "New Navigation"
+msgstr "Safari Mpya"
+
+#: .\navigator\templates\navigator\_app_sidebar.html:53
+msgid "History"
+msgstr "Historia"
+
+#: .\navigator\templates\navigator\_app_sidebar.html:56
+msgid "Navigation history"
+msgstr "Historia ya safari"
+
+#: .\navigator\templates\navigator\_app_sidebar.html:71
+msgid "Delete conversation"
+msgstr "Futa mazungumzo"
+
+#: .\navigator\templates\navigator\_app_sidebar.html:83
+msgid "No navigations yet."
+msgstr "Hakuna safari bado."
+
+#: .\navigator\templates\navigator\_app_sidebar.html:92
+msgid "Guest session"
+msgstr "Kipindi cha mgeni"
+
+#: .\navigator\templates\navigator\_app_sidebar.html:94
+msgid ""
+"Your navigations live in this browser only. Clearing site data or switching "
+"devices will make your chats inaccessible."
+msgstr ""
+"Safari zako ziko kwenye kivinjari hiki tu. Kufuta data ya tovuti au "
+"kubadilisha kifaa kutafanya mazungumzo yako yasipatikane."
+
+#: .\navigator\templates\navigator\_app_sidebar.html:95
+#: .\navigator\templates\navigator\login.html:71
+msgid "Create an account"
+msgstr "Fungua akaunti"
+
+#: .\navigator\templates\navigator\_app_sidebar.html:96
+msgid "to keep your history."
+msgstr "ili kuhifadhi historia yako."
+
+#: .\navigator\templates\navigator\_app_sidebar.html:114
+msgid "Logout"
+msgstr "Toka"
+
+#: .\navigator\templates\navigator\_app_sidebar.html:124
+msgid "Log in"
+msgstr "Ingia"
+
+#: .\navigator\templates\navigator\_app_sidebar.html:130
+msgid "Register"
+msgstr "Jisajili"
+
+#: .\navigator\templates\navigator\_app_sidebar.html:147
+msgid "Delete conversation?"
+msgstr "Futa mazungumzo?"
+
+#: .\navigator\templates\navigator\_app_sidebar.html:150
+msgid "Are you sure you want to delete this conversation?"
+msgstr "Una uhakika unataka kufuta mazungumzo haya?"
+
+#: .\navigator\templates\navigator\_app_sidebar.html:159
+#: .\navigator\templates\navigator\_auth_cancel.html:10
+msgid "Cancel"
+msgstr "Ghairi"
+
+#: .\navigator\templates\navigator\_app_sidebar.html:165
+msgid "Delete"
+msgstr "Futa"
+
+#: .\navigator\templates\navigator\_app_sidebar.html:196
+msgid "Are you sure you want to delete"
+msgstr "Una uhakika unataka kufuta"
+
+#: .\navigator\templates\navigator\_auth_cancel.html:5
+msgid "Cancel and return to launchpad"
+msgstr "Ghairi na urudi kwenye sehemu ya kuanzia"
+
+#: .\navigator\templates\navigator\_language_switcher.html:9
+#: .\navigator\templates\navigator\_language_switcher_light.html:9
+#: .\navigator\templates\navigator\_language_switcher_sidebar.html:9
+msgid "Change language"
+msgstr "Badilisha lugha"
+
+#: .\navigator\templates\navigator\_mobile_menu_button.html:5
+msgid "Open menu"
+msgstr "Fungua menyu"
+
+#: .\navigator\templates\navigator\_oauth_buttons.html:4
+msgid "or"
+msgstr "au"
+
+#: .\navigator\templates\navigator\_oauth_buttons.html:13
+msgid "Continue with Google — unavailable during testing"
+msgstr "Endelea na Google — haipatikani wakati wa majaribio"
+
+#: .\navigator\templates\navigator\_oauth_buttons.html:21
+msgid "Continue with Google"
+msgstr "Endelea na Google"
+
+#: .\navigator\templates\navigator\_oauth_buttons.html:28
+msgid "Continue with Apple — unavailable during testing"
+msgstr "Endelea na Apple — haipatikani wakati wa majaribio"
+
+#: .\navigator\templates\navigator\_oauth_buttons.html:33
+msgid "Continue with Apple"
+msgstr "Endelea na Apple"
+
+#: .\navigator\templates\navigator\_oauth_buttons.html:38
+msgid "Social sign-in is disabled during MVP testing."
+msgstr "Kuingia kwa mitandao ya kijamii kumezimwa wakati wa majaribio ya MVP."
+
+#: .\navigator\templates\navigator\_policy_resubmit_card.html:24
+msgid "Policy link (optional)"
+msgstr "Kiungo cha sera (si lazima)"
+
+#: .\navigator\templates\navigator\_policy_resubmit_card.html:34
+#, fuzzy
+#| msgid "Policy document"
+msgid "Choose document"
+msgstr "Hati ya sera"
+
+#: .\navigator\templates\navigator\_policy_resubmit_card.html:49
+msgid "Submit"
+msgstr "Wasilisha"
+
+#: .\navigator\templates\navigator\about.html:10
+msgid "Platform"
+msgstr "Jukwaa"
+
+#: .\navigator\templates\navigator\about.html:13
+msgid ""
+"Konya helps you navigate social policy documents—step by step, in plain "
+"language, against the rules you bring."
+msgstr ""
+"Konya inakusaidia kusafiri hati za sera za kijamii—hatua kwa hatua, kwa "
+"lugha rahisi, dhidi ya sheria unazotoa."
+
+#: .\navigator\templates\navigator\about.html:19
+msgid "What Konya does"
+msgstr "Konya inafanya nini"
+
+#: .\navigator\templates\navigator\about.html:21
+msgid ""
+"Reads the official policy link or PDF you provide (Bring Your Own Policy)."
+msgstr ""
+"Inasoma kiungo au PDF rasmi cha sera unachotoa (Leta Sera Yako Mwenyewe)."
+
+#: .\navigator\templates\navigator\about.html:22
+msgid "Compares your situation to that document’s eligibility rules."
+msgstr "Inalinganisha hali yako na sheria za ustahiki za hati hiyo."
+
+#: .\navigator\templates\navigator\about.html:23
+msgid "Asks focused questions until the requirements are clear."
+msgstr "Inauliza maswali mahususi hadi mahitaji yawe wazi."
+
+#: .\navigator\templates\navigator\about.html:24
+msgid ""
+"Issues an Action Blueprint—what you may need, what to prepare, and suggested "
+"next steps."
+msgstr ""
+"Inatoa Mpango wa Hatua—kile unachohitaji, cha kuandaa, na hatua "
+"zinazopendekezwa."
+
+#: .\navigator\templates\navigator\about.html:25
+msgid "Answers follow-up questions strictly grounded in your uploaded policy."
+msgstr "Inajibu maswali ya ufuatiliaji kulingana na sera uliyopakia."
+
+#: .\navigator\templates\navigator\about.html:30
+msgid "What Konya does not do"
+msgstr "Konya haifanyi nini"
+
+#: .\navigator\templates\navigator\about.html:32
+msgid "Submit applications, forms, or paperwork on your behalf."
+msgstr "Kutuma maombi, fomu, au nyaraka kwa niaba yako."
+
+#: .\navigator\templates\navigator\about.html:33
+msgid "Grant approvals, benefits, or official eligibility decisions."
+msgstr "Kutoa idhini, faida, au maamuzi rasmi ya ustahiki."
+
+#: .\navigator\templates\navigator\about.html:34
+msgid "Replace advice from a government office, legal adviser, or caseworker."
+msgstr ""
+"Kuchukua nafasi ya ushauri kutoka ofisi ya serikali, mshauri wa kisheria, au "
+"mfanyakazi wa kesi."
+
+#: .\navigator\templates\navigator\about.html:35
+msgid "Guarantee outcomes—guidance is informational only."
+msgstr "Kuhakikisha matokeo—mwelekezo ni wa taarifa tu."
+
+#: .\navigator\templates\navigator\about.html:36
+msgid ""
+"Navigate without a policy document you supply; it does not invent program "
+"rules."
+msgstr "Kusafiri bila hati ya sera unayotoa; haijui sheria za programu."
+
+#: .\navigator\templates\navigator\about.html:41
+msgid "Your responsibility"
+msgstr "Wajibu wako"
+
+#: .\navigator\templates\navigator\about.html:43
+msgid ""
+"Always verify Konya’s guidance against the official policy and confirm next "
+"steps with the relevant authority before you act. Submit your application "
+"directly to the program or office that runs it."
+msgstr ""
+"Thibitisha daima mwelekezo wa Konya dhidi ya sera rasmi na hakikisha hatua "
+"zinazofuata na mamlaka husika kabla ya kutenda. Wasilisha ombi lako moja kwa "
+"moja kwa programu au ofisi inayoendesha."
+
+#: .\navigator\templates\navigator\about.html:49
+#: .\navigator\templates\navigator\legal\terms.html:4
+#: .\navigator\templates\navigator\legal\terms.html:10
+#: .\navigator\templates\navigator\signup.html:69
+msgid "Terms of Service"
+msgstr "Masharti ya Huduma"
+
+#: .\navigator\templates\navigator\about.html:51
+#: .\navigator\templates\navigator\legal\privacy.html:4
+#: .\navigator\templates\navigator\legal\privacy.html:10
+#: .\navigator\templates\navigator\signup.html:71
+msgid "Privacy Policy"
+msgstr "Sera ya Faragha"
+
+#: .\navigator\templates\navigator\chat_detail.html:27
+msgid "Navigator tracking"
+msgstr "Ufuatiliaji wa mwelekezi"
+
+#: .\navigator\templates\navigator\chat_detail.html:55
+#: .\navigator\templates\navigator\chat_detail.html:171
+msgid "Regenerate Response"
+msgstr "Tengeneza jibu upya"
+
+#: .\navigator\templates\navigator\chat_detail.html:76
+#: .\navigator\templates\navigator\chat_detail.html:172
+msgid "Copy to clipboard"
+msgstr "Nakili kwenye ubao wa kunakili"
+
+#: .\navigator\templates\navigator\chat_detail.html:112
+#: .\navigator\templates\navigator\chat_detail.html:325
+msgid "Reference link"
+msgstr "Kiungo cha marejeleo"
+
+#: .\navigator\templates\navigator\chat_detail.html:129
+#: .\navigator\templates\navigator\chat_detail.html:326
+msgid "Supporting document"
+msgstr "Hati ya kusaidia"
+
+#: .\navigator\templates\navigator\chat_detail.html:140
+msgid "Your navigation will appear here shortly."
+msgstr "Safari yako itaonekana hapa hivi karibuni."
+
+#: .\navigator\templates\navigator\chat_detail.html:151
+msgid "Processing document…"
+msgstr "Inachakata hati…"
+
+#: .\navigator\templates\navigator\chat_detail.html:152
+msgid ""
+"Reviewing your policy link or PDF against your situation. This usually takes "
+"a moment."
+msgstr ""
+"Inakagua kiungo au PDF yako ya sera dhidi ya hali yako. Hii kwa kawaida "
+"huchukua muda mfupi."
+
+#: .\navigator\templates\navigator\chat_detail.html:177
+msgid "Your reply"
+msgstr "Jibu lako"
+
+#: .\navigator\templates\navigator\chat_detail.html:183
+#: .\navigator\templates\navigator\chat_detail.html:321
+msgid "Ask a follow-up about your policy document…"
+msgstr "Uliza swali la ufuatiliaji kuhusu hati yako ya sera…"
+
+#: .\navigator\templates\navigator\chat_detail.html:183
+#: .\navigator\templates\navigator\chat_detail.html:322
+msgid "Answer the navigator or share more context…"
+msgstr "Jibu mwelekezi au shiriki muktadha zaidi…"
+
+#: .\navigator\templates\navigator\chat_detail.html:191
+msgid "Send"
+msgstr "Tuma"
+
+#: .\navigator\templates\navigator\chat_detail.html:203
+#: .\navigator\templates\navigator\chat_detail.html:320
+msgid "Follow-up answers are limited to your uploaded policy document."
+msgstr "Majibu ya ufuatiliaji yanategemea hati yako ya sera uliyopakia."
+
+#: .\navigator\templates\navigator\chat_detail.html:209
+#: .\navigator\templates\navigator\chat_detail.html:323
+msgid "The conversation will unlock once your document has been reviewed."
+msgstr "Mazungumzo yatafunguliwa mara hati yako itakapokaguliwa."
+
+#: .\navigator\templates\navigator\chat_detail.html:213
+#: .\navigator\templates\navigator\chat_detail.html:324
+msgid "Submit a matching policy document above to unlock the conversation."
+msgstr "Wasilisha hati inayolingana ya sera hapo juu ili kufungua mazungumzo."
+
+#: .\navigator\templates\navigator\chat_detail.html:327
+msgid "Could not send your message. Please try again."
+msgstr ""
+
+#: .\navigator\templates\navigator\chat_detail.html:817
+msgid ""
+"Something went wrong while processing your document. Please refresh and try "
+"again."
+msgstr ""
+"Kuna tatizo wakati wa kuchakata hati yako. Tafadhali onyesha upya na ujaribu "
+"tena."
+
+#: .\navigator\templates\navigator\launchpad.html:4
+#: .\navigator\templates\navigator\launchpad.html:10
+msgid "What do you need help navigating?"
+msgstr "Unahitaji msaada wa kusafiri wapi?"
+
+#: .\navigator\templates\navigator\launchpad.html:12
+#, fuzzy
+#| msgid ""
+#| "Describe your situation and provide the official policy link or PDF that "
+#| "applies to your case. At least one is required — Konya navigates only "
+#| "against the document you bring."
+msgid ""
+"Describe your situation and provide the official policy link or supporting "
+"document that applies to your case. At least one is required — Konya "
+"navigates only against the document you bring."
+msgstr ""
+"Eleza hali yako na toa kiungo rasmi cha sera au PDF inayohusiana na kesi "
+"yako. Angalau moja inahitajika — Konya inasafiri tu dhidi ya hati unayotoa."
+
+#: .\navigator\templates\navigator\launchpad.html:45
+#, fuzzy
+#| msgid "(required if no link)"
+msgid "(required if no document)"
+msgstr "(inahitajika ikiwa hakuna kiungo)"
+
+#: .\navigator\templates\navigator\launchpad.html:63
+msgid "(required if no link)"
+msgstr "(inahitajika ikiwa hakuna kiungo)"
+
+#: .\navigator\templates\navigator\launchpad.html:73
+#, fuzzy
+#| msgid "Upload a PDF policy document."
+msgid "Upload a document"
+msgstr "Pakia hati ya sera ya PDF."
+
+#: .\navigator\templates\navigator\launchpad.html:74
+msgid "PDF, Word, text, or image"
+msgstr ""
+
+#: .\navigator\templates\navigator\launchpad.html:93
+msgid "Start Navigation"
+msgstr "Anza Safari"
+
+#: .\navigator\templates\navigator\legal\privacy.html:9
+#: .\navigator\templates\navigator\legal\terms.html:9
+msgid "Legal"
+msgstr "Kisheria"
+
+#: .\navigator\templates\navigator\legal\privacy.html:11
+#: .\navigator\templates\navigator\legal\terms.html:11
+msgid "Last updated: June 2026 · Placeholder for MVP testing"
+msgstr "Ilisasishwa mwisho: Juni 2026 · Kishikilia nafasi kwa majaribio ya MVP"
+
+#: .\navigator\templates\navigator\legal\privacy.html:16
+msgid ""
+"This privacy policy is a placeholder for the Konya MVP test environment. It "
+"describes our intended approach in plain language and will be replaced "
+"before a public launch."
+msgstr ""
+"Sera hii ya faragha ni kishikilia nafasi kwa mazingira ya majaribio ya MVP "
+"ya Konya. Inaelezea mbinu yetu kwa lugha rahisi na itabadilishwa kabla ya "
+"kuzinduliwa kwa umma."
+
+#: .\navigator\templates\navigator\legal\privacy.html:19
+msgid ""
+"During testing, we may store account details, conversation history, and "
+"policy documents you provide solely to operate and improve the navigation "
+"experience. Use placeholder credentials and non-sensitive sample data "
+"whenever possible."
+msgstr ""
+"Wakati wa majaribio, tunaweza kuhifadhi maelezo ya akaunti, historia ya "
+"mazungumzo, na hati za sera unazotoa ili kuendesha na kuboresha uzoefu wa "
+"usafiri. Tumia taarifa za majaribio na data ya sampuli isiyo nyeti kila "
+"inapowezekana."
+
+#: .\navigator\templates\navigator\legal\privacy.html:22
+msgid ""
+"We do not sell personal information. If you have questions about data use in "
+"this test phase, contact the project team running your evaluation session."
+msgstr ""
+"Hatuuzi taarifa za kibinafsi. Ikiwa una maswali kuhusu matumizi ya data "
+"katika awamu hii ya majaribio, wasiliana na timu ya mradi inayoendesha "
+"kipindi chako cha tathmini."
+
+#: .\navigator\templates\navigator\legal\privacy.html:27
+#: .\navigator\templates\navigator\legal\terms.html:27
+msgid "Back to registration"
+msgstr "Rudi kwenye usajili"
+
+#: .\navigator\templates\navigator\legal\terms.html:16
+msgid ""
+"Konya is provided as a test environment to help you explore policy "
+"navigation workflows. These terms are a placeholder and do not constitute a "
+"binding agreement."
+msgstr ""
+"Konya inatolewa kama mazingira ya majaribio ili kukusaidia kuchunguza "
+"mtiririko wa usafiri wa sera. Masharti haya ni kishikilia nafasi na hayaundi "
+"makubaliano ya kulazimisha."
+
+#: .\navigator\templates\navigator\legal\terms.html:19
+msgid ""
+"By using this service during the MVP phase, you acknowledge that features, "
+"data handling, and availability may change without notice. Do not submit "
+"sensitive personal information or rely on outputs as official legal or "
+"eligibility advice."
+msgstr ""
+"Kwa kutumia huduma hii wakati wa awamu ya MVP, unakubali kuwa vipengele, "
+"ushughulikaji wa data, na upatikanaji vinaweza kubadilika bila taarifa. "
+"Usiweke taarifa nyeti za kibinafsi wala usitegemee matokeo kama ushauri "
+"rasmi wa kisheria au ustahiki."
+
+#: .\navigator\templates\navigator\legal\terms.html:22
+msgid ""
+"You are responsible for verifying any guidance against official program "
+"documentation and contacting the relevant authority before taking action."
+msgstr ""
+"Una wajibu wa kuthibitisha mwelekezo wowote dhidi ya nyaraka rasmi za "
+"programu na kuwasiliana na mamlaka husika kabla ya kuchukua hatua."
+
+#: .\navigator\templates\navigator\login.html:4
+#: .\navigator\templates\navigator\login.html:64
+#: .\navigator\templates\navigator\signup.html:85
+msgid "Sign in"
+msgstr "Ingia"
+
+#: .\navigator\templates\navigator\login.html:10
+msgid "Welcome back"
+msgstr "Karibu tena"
+
+#: .\navigator\templates\navigator\login.html:11
+msgid "Sign in to continue your navigations."
+msgstr "Ingia ili kuendelea na safari zako."
+
+#: .\navigator\templates\navigator\login.html:69
+msgid "New to Konya?"
+msgstr "Mpya kwenye Konya?"
+
+#: .\navigator\templates\navigator\onboarding.html:63
+msgid "← Back"
+msgstr "← Rudi"
+
+#: .\navigator\templates\navigator\onboarding.html:77
+msgid "Skip Intro"
+msgstr "Ruka Utangulizi"
+
+#: .\navigator\templates\navigator\onboarding.html:91
+msgid "Step 1 of 3"
+msgstr "Hatua ya 1 kati ya 3"
+
+#: .\navigator\templates\navigator\onboarding.html:93
+msgid "What is Konya?"
+msgstr "Konya ni nini?"
+
+#: .\navigator\templates\navigator\onboarding.html:96
+msgid ""
+"Konya is a social policy navigator. You bring the official policy link or "
+"PDF for your case—we read it against your situation, ask focused questions, "
+"and issue an Action Blueprint with what to prepare and suggested next steps."
+msgstr ""
+"Konya ni mwelekezi wa sera za kijamii. Unaleta kiungo au PDF rasmi cha sera "
+"inayohusiana na hali yako—tunaisoma dhidi ya hali yako, kuuliza maswali "
+"mahususi, na kutoa Mpango wa Hatua wenye maandalizi na hatua "
+"zinazopendekezwa."
+
+#: .\navigator\templates\navigator\onboarding.html:99
+msgid ""
+"Konya does not submit applications, grant benefits, or replace advice from a "
+"government office. Guidance is informational and grounded in the document "
+"you provide."
+msgstr ""
+"Konya haitumii maombi, haitoi faida, wala haichukui nafasi ya ushauri kutoka "
+"ofisi ya serikali. Mwelekezo ni wa taarifa tu na unategemea hati unayotoa."
+
+#: .\navigator\templates\navigator\onboarding.html:103
+#: .\navigator\templates\navigator\signup.html:10
+msgid "Test environment"
+msgstr "Mazingira ya majaribio"
+
+#: .\navigator\templates\navigator\onboarding.html:105
+msgid ""
+"This is an MVP preview—not production. Use placeholder emails and passwords "
+"if you register; accounts exist only for evaluation."
+msgstr ""
+"Hii ni onyesho la MVP—si toleo rasmi. Tumia barua pepe na nywila za "
+"majaribio ukijisajili; akaunti zipo kwa tathmini tu."
+
+#: .\navigator\templates\navigator\onboarding.html:116
+msgid "Next"
+msgstr "Ifuatayo"
+
+#: .\navigator\templates\navigator\onboarding.html:127
+msgid "Step 2 of 3"
+msgstr "Hatua ya 2 kati ya 3"
+
+#: .\navigator\templates\navigator\onboarding.html:129
+msgid "Select Language"
+msgstr "Chagua Lugha"
+
+#: .\navigator\templates\navigator\onboarding.html:132
+msgid ""
+"Choose how you'd like Konya to communicate with you. You can change this "
+"anytime from the sidebar."
+msgstr ""
+"Chagua jinsi unavyotaka Konya iwasiliane nawe. Unaweza kubadilisha wakati "
+"wowote kutoka kwenye upau wa pembeni."
+
+#: .\navigator\templates\navigator\onboarding.html:140
+msgid "Select language"
+msgstr "Chagua lugha"
+
+#: .\navigator\templates\navigator\onboarding.html:158
+msgid "Continue"
+msgstr "Endelea"
+
+#: .\navigator\templates\navigator\onboarding.html:169
+msgid "Step 3 of 3"
+msgstr "Hatua ya 3 kati ya 3"
+
+#: .\navigator\templates\navigator\onboarding.html:171
+msgid "How would you like to continue?"
+msgstr "Ungependa kuendelea vipi?"
+
+#: .\navigator\templates\navigator\onboarding.html:174
+msgid ""
+"Create an account to save your navigations across devices, or continue as a "
+"guest to try Konya now. Guest chats stay in this browser only."
+msgstr ""
+"Fungua akaunti ili kuhifadhi safari zako kwenye vifaa vyote, au endelea kama "
+"mgeni kujaribu Konya sasa. Mazungumzo ya mgeni hubaki kwenye kivinjari hiki "
+"tu."
+
+#: .\navigator\templates\navigator\onboarding.html:177
+msgid ""
+"Remember: this preview is for testing—use placeholder credentials if you "
+"sign up."
+msgstr ""
+"Kumbuka: onyesho hili ni kwa majaribio—tumia taarifa za majaribio "
+"ukijisajili."
+
+#: .\navigator\templates\navigator\onboarding.html:188
+msgid "Create an Account"
+msgstr "Fungua Akaunti"
+
+#: .\navigator\templates\navigator\onboarding.html:199
+msgid "Continue as Guest"
+msgstr "Endelea kama Mgeni"
+
+#: .\navigator\templates\navigator\signup.html:4
+#: .\navigator\templates\navigator\signup.html:78
+msgid "Create account"
+msgstr "Fungua akaunti"
+
+#: .\navigator\templates\navigator\signup.html:12
+msgid ""
+"Use a placeholder email and password. Accounts here are for MVP evaluation "
+"only—not real sign-ups."
+msgstr ""
+"Tumia barua pepe na nywila za majaribio. Akaunti hapa ni kwa tathmini ya MVP "
+"tu—si usajili halisi."
+
+#: .\navigator\templates\navigator\signup.html:17
+msgid "Create your account"
+msgstr "Fungua akaunti yako"
+
+#: .\navigator\templates\navigator\signup.html:18
+msgid "Start navigating with a clean, persistent history."
+msgstr "Anza kusafiri na historia safi na ya kudumu."
+
+#: .\navigator\templates\navigator\signup.html:58
+msgid "Create a password"
+msgstr "Unda nywila"
+
+#: .\navigator\templates\navigator\signup.html:68
+msgid "By registering, you agree to our"
+msgstr "Kwa kujisajili, unakubali"
+
+#: .\navigator\templates\navigator\signup.html:70
+msgid "and"
+msgstr "na"
+
+#: .\navigator\templates\navigator\signup.html:83
+msgid "Already have an account?"
+msgstr "Tayari una akaunti?"
+
+#: .\navigator\views.py:761
+msgid "Invalid email or password."
+msgstr "Barua pepe au nywila si sahihi."
+
+#~ msgid "Bring your policy"
+#~ msgstr "Leta sera yako"
+
+#~ msgid ""
+#~ "Konya navigates against the policy you provide. Share the official "
+#~ "program page or PDF that matches your situation to continue."
+#~ msgstr ""
+#~ "Konya inasafiri dhidi ya sera unayotoa. Shiriki ukurasa rasmi wa programu "
+#~ "au PDF inayolingana na hali yako ili kuendelea."
+
+#~ msgid "Upload a PDF"
+#~ msgstr "Pakia PDF"
+
+#~ msgid "Click to browse"
+#~ msgstr "Bofya kuvinjari"
+
+#~ msgid "Provide a link, a PDF, or both."
+#~ msgstr "Toa kiungo, PDF, au zote mbili."
+
+#~ msgid "Submit Document"
+#~ msgstr "Wasilisha Hati"
+
+#~ msgid "Choose PDF"
+#~ msgstr "Chagua PDF"
+
+#~ msgid "(required if no PDF)"
+#~ msgstr "(inahitajika ikiwa hakuna PDF)"
+
+#~ msgid "Policy document (PDF)"
+#~ msgstr "Hati ya sera (PDF)"

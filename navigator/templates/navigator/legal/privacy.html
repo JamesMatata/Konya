@@ -1,0 +1,30 @@
+{% extends "navigator/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Privacy Policy" %} — Konya{% endblock %}
+
+{% block content %}
+<article class="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-16">
+    <header class="mb-8 sm:mb-10">
+        <p class="text-xs font-medium uppercase tracking-widest text-[#0F172A]/45">{% trans "Legal" %}</p>
+        <h1 class="mt-3 font-serif text-2xl font-medium tracking-tight text-[#0F172A] sm:text-3xl lg:text-4xl">{% trans "Privacy Policy" %}</h1>
+        <p class="mt-4 text-sm text-[#0F172A]/60">{% trans "Last updated: June 2026 · Placeholder for MVP testing" %}</p>
+    </header>
+
+    <div class="space-y-6 text-sm leading-relaxed text-[#0F172A]/80">
+        <p>
+            {% trans "This privacy policy is a placeholder for the Konya MVP test environment. It describes our intended approach in plain language and will be replaced before a public launch." %}
+        </p>
+        <p>
+            {% trans "During testing, we may store account details, conversation history, and policy documents you provide solely to operate and improve the navigation experience. Use placeholder credentials and non-sensitive sample data whenever possible." %}
+        </p>
+        <p>
+            {% trans "We do not sell personal information. If you have questions about data use in this test phase, contact the project team running your evaluation session." %}
+        </p>
+    </div>
+
+    <p class="mt-12 text-sm text-[#0F172A]/60">
+        <a href="{% url 'accounts:signup' %}" class="font-medium text-[#0F172A] underline underline-offset-2">{% trans "Back to registration" %}</a>
+    </p>
+</article>
+{% endblock %}

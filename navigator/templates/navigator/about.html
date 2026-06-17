@@ -1,0 +1,55 @@
+{% extends "navigator/app_base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "About Konya" %} — Konya{% endblock %}
+
+{% block main %}
+    <div class="konya-scroll min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+        <article class="mx-auto max-w-4xl">
+            <header class="mb-8 sm:mb-10">
+                <p class="text-xs font-medium uppercase tracking-widest text-[#0F172A]/45">{% trans "Platform" %}</p>
+                <h1 class="mt-3 font-serif text-2xl font-medium tracking-tight text-[#0F172A] sm:text-3xl lg:text-4xl">{% trans "About Konya" %}</h1>
+                <p class="mt-4 text-base leading-relaxed text-[#0F172A]/60">
+                    {% trans "Konya helps you navigate social policy documents—step by step, in plain language, against the rules you bring." %}
+                </p>
+            </header>
+
+            <div class="space-y-10 text-sm leading-relaxed text-[#0F172A]/80">
+                <section>
+                    <h2 class="font-serif text-xl font-medium text-[#0F172A]">{% trans "What Konya does" %}</h2>
+                    <ul class="mt-4 list-disc space-y-2 pl-5">
+                        <li>{% trans "Reads the official policy link or PDF you provide (Bring Your Own Policy)." %}</li>
+                        <li>{% trans "Compares your situation to that document’s eligibility rules." %}</li>
+                        <li>{% trans "Asks focused questions until the requirements are clear." %}</li>
+                        <li>{% trans "Issues an Action Blueprint—what you may need, what to prepare, and suggested next steps." %}</li>
+                        <li>{% trans "Answers follow-up questions strictly grounded in your uploaded policy." %}</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 class="font-serif text-xl font-medium text-[#0F172A]">{% trans "What Konya does not do" %}</h2>
+                    <ul class="mt-4 list-disc space-y-2 pl-5">
+                        <li>{% trans "Submit applications, forms, or paperwork on your behalf." %}</li>
+                        <li>{% trans "Grant approvals, benefits, or official eligibility decisions." %}</li>
+                        <li>{% trans "Replace advice from a government office, legal adviser, or caseworker." %}</li>
+                        <li>{% trans "Guarantee outcomes—guidance is informational only." %}</li>
+                        <li>{% trans "Navigate without a policy document you supply; it does not invent program rules." %}</li>
+                    </ul>
+                </section>
+
+                <section class="rounded-md border border-gray-300 bg-[#F1F5F9] px-5 py-4 shadow-none">
+                    <h2 class="font-serif text-lg font-medium text-[#0F172A]">{% trans "Your responsibility" %}</h2>
+                    <p class="mt-2">
+                        {% trans "Always verify Konya’s guidance against the official policy and confirm next steps with the relevant authority before you act. Submit your application directly to the program or office that runs it." %}
+                    </p>
+                </section>
+            </div>
+
+            <footer class="mt-10 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-gray-300 pt-6 text-sm text-[#0F172A]/60 sm:mt-12">
+                <a href="{% url 'accounts:terms' %}" class="font-medium text-[#0F172A] underline underline-offset-2">{% trans "Terms of Service" %}</a>
+                <span class="mx-2 text-[#0F172A]/30">·</span>
+                <a href="{% url 'accounts:privacy' %}" class="font-medium text-[#0F172A] underline underline-offset-2">{% trans "Privacy Policy" %}</a>
+            </footer>
+        </article>
+    </div>
+{% endblock %}

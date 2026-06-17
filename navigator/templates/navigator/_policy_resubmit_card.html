@@ -1,0 +1,58 @@
+{% load i18n navigator_extras %}
+<div id="policy-upload-block" class="group/message w-full{% if needs_initial_processing %} hidden{% endif %}"{% if active_gatekeeper_message %} data-active-gatekeeper-id="{{ active_gatekeeper_message.id }}"{% endif %}>
+    <article class="rounded-md bg-[#F1F5F9] px-4 py-4 shadow-none border-0 border-transparent sm:px-5 sm:py-4">
+        <p id="policy-resubmit-text" class="text-sm leading-relaxed text-[#0F172A]/80">
+            {% if active_gatekeeper_message %}{{ active_gatekeeper_message.content }}{% endif %}
+        </p>
+
+        <form
+            id="policy-form"
+            method="post"
+            action="{% url 'navigator:submit_policy_document' chat_id=chat.id %}"
+            enctype="multipart/form-data"
+            class="mt-4 space-y-3 border-t border-[#0F172A]/10 pt-4"
+            novalidate
+        >
+            {% csrf_token %}
+
+            <div id="policy-form-errors" class="hidden rounded-md border border-[#0F172A]/15 bg-[#F8FAFC] px-3 py-2.5 text-sm text-[#0F172A]/80"></div>
+
+            <input
+                type="url"
+                name="attached_url"
+                id="policy-url-input"
+                placeholder="{% trans 'Policy link (optional)' %}"
+                class="w-full rounded-md border border-gray-300 bg-[#F8FAFC] px-3 py-2.5 text-sm text-[#0F172A] placeholder:text-[#0F172A]/40 shadow-none outline-none transition-colors focus:border-[#0F172A]"
+            >
+
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <label
+                    for="policy-file-input"
+                    id="policy-upload-zone"
+                    class="flex flex-1 cursor-pointer items-center justify-center rounded-md border border-dashed border-gray-300 bg-[#F8FAFC] px-3 py-2.5 text-center text-sm text-[#0F172A]/60 transition-colors hover:border-gray-400 shadow-none"
+                >
+                    <span id="policy-file-label">{% trans "Choose document" %}</span>
+                    <span id="policy-file-name" class="hidden truncate text-[#0F172A]"></span>
+                </label>
+                <input
+                    type="file"
+                    name="attached_file"
+                    id="policy-file-input"
+                    accept="{% policy_file_accept %}"
+                    class="sr-only"
+                >
+                <button
+                    id="policy-submit-button"
+                    type="submit"
+                    class="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-md bg-[#2563EB] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-50 shadow-none border-0 sm:w-auto"
+                >
+                    <span id="policy-submit-label">{% trans "Submit" %}</span>
+                    <svg id="policy-submit-spinner" class="hidden h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </div>
+        </form>
+    </article>
+</div>

@@ -1,0 +1,245 @@
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konya</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['Lora', 'Georgia', 'serif'],
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            },
+        };
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:wght@400;500;600&display=swap"
+        rel="stylesheet"
+    >
+
+    <style>
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        h1, h2, h3, .font-heading {
+            font-family: 'Lora', Georgia, serif;
+        }
+
+        .onboarding-step {
+            display: none;
+        }
+
+        .onboarding-step.active {
+            display: flex;
+        }
+    </style>
+</head>
+<body class="min-h-screen w-full bg-[#0F172A] text-[#F8FAFC] font-sans antialiased">
+
+    <div class="relative flex min-h-screen w-full flex-col">
+        <header class="absolute inset-x-0 top-0 z-10 flex items-center justify-between p-4 sm:p-6">
+            {% if onboarding_step > 1 %}
+                <form method="post" action="{% url 'navigator:onboarding' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="back">
+                    <button
+                        type="submit"
+                        class="text-sm text-[#666460] transition-colors hover:text-[#F8FAFC] shadow-none border-0 border-transparent bg-transparent"
+                    >
+                        {% trans "← Back" %}
+                    </button>
+                </form>
+            {% else %}
+                <div></div>
+            {% endif %}
+
+            <form method="post" action="{% url 'navigator:onboarding' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="skip">
+                <button
+                    type="submit"
+                    class="text-sm text-[#666460] transition-colors hover:text-[#F8FAFC] shadow-none border-0 border-transparent bg-transparent"
+                >
+                    {% trans "Skip Intro" %}
+                </button>
+            </form>
+        </header>
+
+        <main class="flex flex-1 items-center justify-center px-4 py-16 sm:px-6 sm:py-20">
+            <div class="w-full max-w-lg">
+
+                {# Step 1: What is Konya? #}
+                <section
+                    id="step-1"
+                    class="onboarding-step flex-col {% if onboarding_step == 1 %}active{% endif %}"
+                    data-step="1"
+                >
+                    <p class="text-xs font-medium uppercase tracking-widest text-[#666460]">{% trans "Step 1 of 3" %}</p>
+                    <h1 class="font-heading mt-4 text-3xl font-medium tracking-tight text-[#F8FAFC] sm:text-4xl">
+                        {% trans "What is Konya?" %}
+                    </h1>
+                    <p class="mt-6 text-base leading-relaxed text-[#F8FAFC]/70">
+                        {% trans "Konya is a social policy navigator. You bring the official policy link or PDF for your case—we read it against your situation, ask focused questions, and issue an Action Blueprint with what to prepare and suggested next steps." %}
+                    </p>
+                    <p class="mt-4 text-base leading-relaxed text-[#F8FAFC]/70">
+                        {% trans "Konya does not submit applications, grant benefits, or replace advice from a government office. Guidance is informational and grounded in the document you provide." %}
+                    </p>
+
+                    <div class="mt-6 rounded-md border border-[#F8FAFC]/15 bg-[#F8FAFC]/5 px-4 py-3.5 shadow-none">
+                        <p class="text-[10px] font-medium uppercase tracking-wider text-[#F8FAFC]/45">{% trans "Test environment" %}</p>
+                        <p class="mt-1.5 text-sm leading-relaxed text-[#F8FAFC]/65">
+                            {% trans "This is an MVP preview—not production. Use placeholder emails and passwords if you register; accounts exist only for evaluation." %}
+                        </p>
+                    </div>
+
+                    <form method="post" action="{% url 'navigator:onboarding' %}" class="mt-10">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="next">
+                        <button
+                            type="submit"
+                            class="w-full rounded-md bg-[#2563EB] px-6 py-4 text-sm font-medium text-white transition-colors hover:bg-[#1D4ED8] shadow-none border-0 border-transparent"
+                        >
+                            {% trans "Next" %}
+                        </button>
+                    </form>
+                </section>
+
+                {# Step 2: Select Language #}
+                <section
+                    id="step-2"
+                    class="onboarding-step flex-col {% if onboarding_step == 2 %}active{% endif %}"
+                    data-step="2"
+                >
+                    <p class="text-xs font-medium uppercase tracking-widest text-[#666460]">{% trans "Step 2 of 3" %}</p>
+                    <h1 class="font-heading mt-4 text-3xl font-medium tracking-tight text-[#F8FAFC] sm:text-4xl">
+                        {% trans "Select Language" %}
+                    </h1>
+                    <p class="mt-6 text-base leading-relaxed text-[#F8FAFC]/70">
+                        {% trans "Choose how you'd like Konya to communicate with you. You can change this anytime from the sidebar." %}
+                    </p>
+
+                    <form method="post" action="{% url 'navigator:onboarding' %}" id="language-form" class="mt-10">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="set_language">
+                        <input type="hidden" name="language" id="language-input" value="{{ saved_language|default:'en' }}">
+
+                        <div class="space-y-3" role="listbox" aria-label="{% trans 'Select language' %}">
+                            {% for code, label in languages %}
+                                <button
+                                    type="button"
+                                    data-language="{{ code }}"
+                                    class="language-option w-full rounded-md px-6 py-4 text-left text-sm font-medium transition-colors shadow-none border-0 border-transparent {% if code == saved_language %}bg-[#2563EB] text-white{% else %}bg-[#0F172A] text-[#F8FAFC] hover:bg-[#1E293B]{% endif %}"
+                                    role="option"
+                                    aria-selected="{% if code == saved_language %}true{% else %}false{% endif %}"
+                                >
+                                    {{ label }}
+                                </button>
+                            {% endfor %}
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="mt-8 w-full rounded-md bg-[#2563EB] px-6 py-4 text-sm font-medium text-white transition-colors hover:bg-[#1D4ED8] shadow-none border-0 border-transparent"
+                        >
+                            {% trans "Continue" %}
+                        </button>
+                    </form>
+                </section>
+
+                {# Step 3: Create Account vs Guest #}
+                <section
+                    id="step-3"
+                    class="onboarding-step flex-col {% if onboarding_step == 3 %}active{% endif %}"
+                    data-step="3"
+                >
+                    <p class="text-xs font-medium uppercase tracking-widest text-[#666460]">{% trans "Step 3 of 3" %}</p>
+                    <h1 class="font-heading mt-4 text-3xl font-medium tracking-tight text-[#F8FAFC] sm:text-4xl">
+                        {% trans "How would you like to continue?" %}
+                    </h1>
+                    <p class="mt-6 text-base leading-relaxed text-[#F8FAFC]/70">
+                        {% trans "Create an account to save your navigations across devices, or continue as a guest to try Konya now. Guest chats stay in this browser only." %}
+                    </p>
+                    <p class="mt-3 text-sm leading-relaxed text-[#F8FAFC]/50">
+                        {% trans "Remember: this preview is for testing—use placeholder credentials if you sign up." %}
+                    </p>
+
+                    <div class="mt-10 space-y-3">
+                        <form method="post" action="{% url 'navigator:onboarding' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="create_account">
+                            <button
+                                type="submit"
+                                class="w-full rounded-md bg-[#2563EB] px-6 py-4 text-sm font-medium text-white transition-colors hover:bg-[#1D4ED8] shadow-none border-0 border-transparent"
+                            >
+                                {% trans "Create an Account" %}
+                            </button>
+                        </form>
+
+                        <form method="post" action="{% url 'navigator:onboarding' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="continue_guest">
+                            <button
+                                type="submit"
+                                class="w-full rounded-md bg-[#0F172A] px-6 py-4 text-sm font-medium text-[#F8FAFC] transition-colors hover:bg-[#1E293B] shadow-none border-0 border-transparent"
+                            >
+                                {% trans "Continue as Guest" %}
+                            </button>
+                        </form>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const languageInput = document.getElementById("language-input");
+            const options = document.querySelectorAll(".language-option");
+
+            if (!languageInput || !options.length) return;
+
+            const selectedClasses = ["bg-[#2563EB]", "text-white"];
+            const unselectedClasses = ["bg-[#0F172A]", "text-[#F8FAFC]", "hover:bg-[#1E293B]"];
+
+            function selectLanguage(code) {
+                languageInput.value = code;
+                options.forEach(function (option) {
+                    const isSelected = option.dataset.language === code;
+                    option.setAttribute("aria-selected", isSelected ? "true" : "false");
+                    option.classList.remove(...selectedClasses, ...unselectedClasses);
+                    if (isSelected) {
+                        option.classList.add(...selectedClasses);
+                    } else {
+                        option.classList.add(...unselectedClasses);
+                    }
+                });
+            }
+
+            options.forEach(function (option) {
+                option.addEventListener("click", function () {
+                    selectLanguage(option.dataset.language);
+                });
+            });
+
+            if (!languageInput.value) {
+                selectLanguage("en");
+            }
+        });
+    </script>
+</body>
+</html>

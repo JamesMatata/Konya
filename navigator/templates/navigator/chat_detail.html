@@ -1,0 +1,1772 @@
+{% extends "navigator/app_base.html" %}
+{% load i18n navigator_extras %}
+
+{% block title %}{{ chat.title }} — Konya{% endblock %}
+
+{% block mobile_topbar %}{% endblock %}
+
+{% block main %}
+    <input type="hidden" id="page-csrf-token" value="{{ csrf_token }}">
+    <header class="shrink-0 border-b border-gray-300 bg-[#F1F5F9] px-4 py-4 sm:px-6 lg:px-8 lg:py-5">
+        <div class="flex items-center justify-between gap-3 sm:gap-6">
+            <div class="flex min-w-0 flex-1 items-center gap-3">
+                {% include "navigator/_mobile_menu_button.html" %}
+                <h1
+                    id="chat-title-header"
+                    data-chat-id="{{ chat.id }}"
+                    class="min-w-0 truncate font-serif text-base font-medium tracking-tight text-[#0F172A] sm:text-lg lg:text-xl"
+                >
+                    {{ chat.title }}
+                </h1>
+            </div>
+            <div class="flex shrink-0 items-center gap-2">
+                <div
+                    id="header-state-dots"
+                    class="flex shrink-0 items-center gap-1.5"
+                    aria-hidden="true"
+                    title="{% trans 'Navigator tracking' %}"
+                >
+                    <span class="header-state-dot h-1.5 w-1.5 rounded-full bg-[#94A3B8]/45"></span>
+                    <span class="header-state-dot header-state-dot--mid h-1.5 w-1.5 rounded-full bg-[#94A3B8]/65"></span>
+                    <span class="header-state-dot h-1.5 w-1.5 rounded-full bg-[#94A3B8]/45"></span>
+                </div>
+                {% include "navigator/_mobile_about_link.html" %}
+            </div>
+        </div>
+    </header>
+
+    <div
+        id="eligibility-progress-wrap"
+        class="{% if not eligibility_progress.visible %}hidden{% endif %} relative shrink-0 border-b border-gray-300 bg-[#F8FAFC] px-4 py-2 sm:px-6 lg:px-8"
+    >
+        <div class="relative mx-auto w-full max-w-3xl">
+            <button
+                id="eligibility-progress-toggle"
+                type="button"
+                class="eligibility-strip-toggle w-full text-left shadow-none border-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/35"
+                aria-expanded="false"
+                aria-controls="eligibility-progress-panel"
+            >
+                <span id="eligibility-progress-summary" class="eligibility-strip-label min-w-0 truncate"></span>
+                <span class="eligibility-strip-track" aria-hidden="true">
+                    <span id="eligibility-progress-bar" class="eligibility-strip-fill" style="width: 0%"></span>
+                </span>
+                <svg id="eligibility-progress-chevron" class="eligibility-strip-chevron shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/>
+                </svg>
+            </button>
+
+            <div
+                id="eligibility-progress-panel"
+                class="eligibility-strip-panel konya-scroll absolute left-0 right-0 z-20 hidden max-h-52 overflow-y-auto"
+                hidden
+                role="region"
+                aria-label="{% trans 'Eligibility criteria progress' %}"
+            >
+                <div class="eligibility-strip-panel-header">
+                    <span class="eligibility-strip-panel-title">{% trans "Requirements" %}</span>
+                    <span id="eligibility-progress-panel-count" class="eligibility-strip-panel-count"></span>
+                </div>
+                <div class="eligibility-strip-panel-body">
+                    <p id="eligibility-progress-panel-next" class="eligibility-strip-panel-next hidden"></p>
+                    <div id="eligibility-progress-list" class="eligibility-strip-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="message-timeline" class="konya-scroll min-h-0 flex-1 overflow-y-auto bg-[#F8FAFC] px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+        <div id="messages-list" class="mx-auto w-full max-w-3xl space-y-6 sm:space-y-8" data-chat-url="{% url 'navigator:chat_detail' chat_id=chat.id %}" data-chat-id="{{ chat.id }}" data-process-url="{% url 'navigator:process_launch_navigation' chat_id=chat.id %}" data-reasoning-url="{% url 'navigator:reasoning_trace' chat_id=chat.id %}" data-needs-initial-processing="{% if needs_initial_processing %}true{% else %}false{% endif %}">
+        {% for message in messages %}
+            {% if message.role == 'ai' %}
+                <div class="group/message w-full" data-message-id="{{ message.id }}">
+                    {% if message.is_error %}
+                        <p class="text-sm leading-relaxed text-[#0F172A]/80">{{ message.content }}</p>
+                        <form method="post" class="mt-4 regenerate-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="regenerate">
+                            <button
+                                type="submit"
+                                class="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-[#0F172A]/60 transition-colors hover:bg-[#0F172A]/5 hover:text-[#0F172A] shadow-none border-0 border-transparent bg-transparent"
+                            >
+                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182"/>
+                                </svg>
+                                {% trans "Regenerate Response" %}
+                            </button>
+                        </form>
+                    {% elif message|is_gatekeeper %}
+                        {% if not active_gatekeeper_message or message.id != active_gatekeeper_message.id %}
+                        <article class="rounded-md bg-[#F1F5F9] px-4 py-4 shadow-none border-0 border-transparent sm:px-5 sm:py-4">
+                            <p class="text-sm leading-relaxed text-[#0F172A]/80">{{ message.content }}</p>
+                        </article>
+                        {% endif %}
+                    {% else %}
+                        <div
+                            id="message-content-{{ message.id }}"
+                            class="ai-markdown prose prose-stone max-w-none text-[0.9375rem] prose-headings:font-serif prose-headings:font-medium prose-headings:tracking-tight prose-headings:text-[#0F172A] prose-p:font-sans prose-p:leading-relaxed prose-p:text-[#0F172A] prose-li:font-sans prose-li:text-[#0F172A] prose-strong:font-semibold prose-strong:text-[#0F172A] prose-a:text-[#0F172A] prose-a:underline prose-a:underline-offset-2 prose-code:rounded prose-code:bg-[#F1F5F9] prose-code:px-1 prose-code:py-0.5 prose-code:text-[#0F172A] prose-pre:rounded-md prose-pre:bg-[#F1F5F9] prose-pre:shadow-none prose-hr:border-[#E2E8F0] shadow-none border-0{% if message|is_blueprint:chat %} is-blueprint-message{% endif %}"
+                            data-raw-script="{{ message.id }}"
+                            {% if message|is_blueprint:chat %}data-is-blueprint="true"{% endif %}
+                        ></div>
+                        {{ message.content|json_script:message.id }}
+
+                        <div class="mt-2 flex">
+                            <button
+                                type="button"
+                                class="copy-message-btn rounded-md p-1.5 text-[#0F172A]/30 transition-colors hover:bg-[#0F172A]/5 hover:text-[#0F172A]/60 shadow-none border-0 border-transparent bg-transparent opacity-0 group-hover/message:opacity-100 max-lg:opacity-100"
+                                aria-label="{% trans 'Copy to clipboard' %}"
+                                data-copy-target="message-content-{{ message.id }}"
+                            >
+                                <svg class="copy-icon h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9.75a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 1.927-.184"/>
+                                </svg>
+                                <svg class="check-icon hidden h-4 w-4 text-[#0F172A]/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                                </svg>
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="flex justify-end">
+                    <article
+                        class="w-fit min-w-[5.5rem] max-w-[92%] rounded-md bg-[#E2E8F0] px-4 py-3.5 shadow-none border-0 border-transparent sm:max-w-[88%] sm:px-5 sm:py-4"
+                        data-message-id="{{ message.id }}"
+                    >
+                        {% if message.content %}
+                        <p id="message-content-{{ message.id }}" class="whitespace-pre-wrap text-[0.9375rem] leading-relaxed text-[#0F172A]">{{ message.content }}</p>
+                        {% endif %}
+
+                    {% if message.attached_url or message.attached_file %}
+                        <div class="{% if message.content %}mt-4 border-t border-[#0F172A]/10 pt-4 {% endif %}space-y-2">
+                            {% if message.attached_url %}
+                                <a
+                                    href="{{ message.attached_url }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="flex items-start gap-2.5 rounded-md px-2 py-2 text-left no-underline transition-colors hover:bg-[#0F172A]/5 shadow-none border-0 border-transparent"
+                                >
+                                    <svg class="mt-0.5 h-4 w-4 shrink-0 text-[#0F172A]/45" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"/>
+                                    </svg>
+                                    <span class="min-w-0">
+                                        <span class="block text-[10px] font-medium uppercase tracking-wider text-[#0F172A]/45">{% trans "Reference link" %}</span>
+                                        <span class="mt-0.5 block truncate text-xs leading-snug text-[#0F172A]/75 underline decoration-[#0F172A]/25 underline-offset-2">{{ message.attached_url }}</span>
+                                    </span>
+                                </a>
+                            {% endif %}
+
+                            {% if message.attached_file %}
+                                <a
+                                    href="{{ message.attached_file.url }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="flex items-start gap-2.5 rounded-md px-2 py-2 text-left no-underline transition-colors hover:bg-[#0F172A]/5 shadow-none border-0 border-transparent"
+                                >
+                                    <svg class="mt-0.5 h-4 w-4 shrink-0 text-[#0F172A]/45" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
+                                    </svg>
+                                    <span class="min-w-0">
+                                        <span class="block text-[10px] font-medium uppercase tracking-wider text-[#0F172A]/45">{% trans "Supporting document" %}</span>
+                                        <span class="mt-0.5 block truncate text-xs leading-snug text-[#0F172A]/75 underline decoration-[#0F172A]/25 underline-offset-2">{{ message.attached_file.name|filename }}</span>
+                                    </span>
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    </article>
+                </div>
+            {% endif %}
+        {% empty %}
+            <p class="text-sm text-[#0F172A]/60" data-empty-placeholder>{% trans "Your navigation will appear here shortly." %}</p>
+        {% endfor %}
+
+        {% if needs_initial_processing %}
+            <div id="processing-indicator" class="w-full" role="status" aria-live="polite">
+                <article class="flex items-start gap-3 rounded-md bg-[#F1F5F9] px-4 py-4 shadow-none border-0 border-transparent sm:items-center sm:gap-4 sm:px-5 sm:py-4">
+                    <svg class="h-5 w-5 shrink-0 animate-spin text-[#0F172A]/50" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <div>
+                        <p class="text-sm font-medium text-[#0F172A]">{% trans "Processing document…" %}</p>
+                        <p class="mt-1 text-xs leading-relaxed text-[#0F172A]/55">{% trans "Reviewing your policy link or PDF against your situation. This usually takes a moment." %}</p>
+                    </div>
+                </article>
+            </div>
+        {% endif %}
+
+        {% if not chat.has_valid_document %}
+            {% include "navigator/_policy_resubmit_card.html" %}
+        {% endif %}
+        </div>
+    </div>
+
+    <div class="shrink-0 bg-[#F8FAFC] px-4 py-4 sm:px-6 sm:py-5 lg:px-8" id="chat-input-area">
+        {% if chat.has_valid_document %}
+        <form
+            id="chat-form"
+            method="post"
+            action="{% url 'navigator:chat_detail' chat_id=chat.id %}"
+            class="mx-auto w-full max-w-3xl"
+            data-regenerate-label="{% trans 'Regenerate Response' %}"
+            data-copy-label="{% trans 'Copy to clipboard' %}"
+            data-follow-up-mode="{% if navigation_complete %}true{% else %}false{% endif %}"
+        >
+            {% csrf_token %}
+            <div class="flex items-end gap-2 rounded-2xl bg-[#F1F5F9] px-3 py-3 shadow-none border-0 border-transparent sm:gap-3 sm:px-4 sm:py-4">
+                <label for="reply-input" class="sr-only">{% trans "Your reply" %}</label>
+                <textarea
+                    id="reply-input"
+                    name="content"
+                    rows="2"
+                    required
+                    placeholder="{% if navigation_complete %}{% trans 'Ask a follow-up about your policy document…' %}{% else %}{% trans 'Answer the navigator or share more context…' %}{% endif %}"
+                    class="min-h-[2.75rem] max-h-40 flex-1 resize-none bg-transparent px-2 py-2 text-sm leading-relaxed text-[#0F172A] placeholder:text-[#0F172A]/40 shadow-none border-0 border-transparent outline-none ring-0 focus:border-0 focus:outline-none focus:ring-0 read-only:cursor-not-allowed read-only:opacity-60"
+                ></textarea>
+                <button
+                    id="send-button"
+                    type="submit"
+                    class="mb-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#2563EB] text-white transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-50 shadow-none border-0 border-transparent"
+                >
+                    <span id="send-label" class="sr-only">{% trans "Send" %}</span>
+                    <svg id="send-icon" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18"/>
+                    </svg>
+                    <svg id="send-spinner" class="hidden h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </div>
+            {% if navigation_complete %}
+            <p data-follow-up-hint class="mt-2 text-center text-xs leading-relaxed text-[#0F172A]/45">
+                {% trans "Follow-up answers are limited to your uploaded policy document." %}
+            </p>
+            {% endif %}
+        </form>
+        {% elif needs_initial_processing %}
+        <div class="mx-auto w-full max-w-3xl rounded-md bg-[#F1F5F9] px-5 py-4 text-center text-sm text-[#0F172A]/55">
+            {% trans "The conversation will unlock once your document has been reviewed." %}
+        </div>
+        {% else %}
+        <div class="mx-auto w-full max-w-3xl rounded-md bg-[#F1F5F9] px-5 py-4 text-center text-sm text-[#0F172A]/55">
+            {% trans "Submit a matching policy document above to unlock the conversation." %}
+        </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+    #reply-input {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    #reply-input::-webkit-scrollbar {
+        display: none;
+    }
+
+    .ai-markdown.prose :where(pre, code, img, table, th, td, blockquote) {
+        box-shadow: none;
+        border-width: 0;
+    }
+
+    .ai-markdown.prose :where(blockquote) {
+        border-left-width: 2px;
+        border-left-color: #E2E8F0;
+    }
+
+    .ai-markdown.prose :where(pre) {
+        padding: 0.875rem 1rem;
+        overflow-x: auto;
+        max-width: 100%;
+    }
+
+    .ai-markdown.prose :where(table) {
+        display: block;
+        overflow-x: auto;
+        max-width: 100%;
+    }
+
+    .ai-markdown.prose :where(img) {
+        max-width: 100%;
+        height: auto;
+    }
+
+    #header-state-dots.is-active .header-state-dot {
+        animation: konya-dot-pulse 1.2s ease-in-out infinite;
+    }
+
+    #header-state-dots.is-active .header-state-dot--mid {
+        animation-delay: 0.2s;
+    }
+
+    #header-state-dots.is-active .header-state-dot:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+
+    @keyframes konya-dot-pulse {
+        0%, 100% { opacity: 0.35; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.15); }
+    }
+
+    .konya-reasoning-wrap {
+        margin-top: 1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .konya-reasoning-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        border: 0;
+        background: transparent;
+        padding: 0.25rem 0;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: #2563EB;
+        cursor: pointer;
+        box-shadow: none;
+        transition: color 0.15s ease;
+    }
+
+    .konya-reasoning-toggle:hover {
+        color: #1D4ED8;
+    }
+
+    .konya-reasoning-toggle:disabled {
+        cursor: wait;
+        opacity: 0.7;
+    }
+
+    .konya-reasoning-chevron {
+        transition: transform 0.2s ease;
+    }
+
+    .konya-reasoning-toggle[aria-expanded="true"] .konya-reasoning-chevron {
+        transform: rotate(180deg);
+    }
+
+    .konya-reasoning-panel {
+        margin-top: 0.75rem;
+        border-radius: 0.375rem;
+        border: 1px solid #E2E8F0;
+        background: #F8FAFC;
+        padding: 0.875rem 1rem;
+    }
+
+    .konya-reasoning-panel[hidden] {
+        display: none;
+    }
+
+    .konya-reasoning-content {
+        font-size: 0.875rem;
+        line-height: 1.6;
+        color: #0F172A;
+    }
+
+    .konya-reasoning-content p {
+        margin-top: 0;
+        margin-bottom: 0.75rem;
+    }
+
+    .konya-reasoning-content ul {
+        margin: 0.5rem 0 0.75rem;
+        padding-left: 1.25rem;
+    }
+
+    .konya-reasoning-content li {
+        margin-bottom: 0.375rem;
+    }
+
+    #eligibility-progress-wrap.is-open #eligibility-progress-chevron {
+        transform: rotate(180deg);
+    }
+
+    .eligibility-strip-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-height: 1.75rem;
+        padding: 0.3125rem 0.5rem;
+        border-radius: 0.375rem;
+        background: #F1F5F9;
+        transition: background-color 0.15s ease;
+    }
+
+    .eligibility-strip-toggle:hover {
+        background: #E8EEF4;
+    }
+
+    .eligibility-strip-label {
+        flex: 1 1 auto;
+        min-width: 0;
+        font-size: 0.6875rem;
+        font-weight: 500;
+        line-height: 1.25;
+        letter-spacing: 0.01em;
+        color: rgba(15, 23, 42, 0.62);
+    }
+
+    @media (min-width: 640px) {
+        .eligibility-strip-label {
+            font-size: 0.75rem;
+        }
+    }
+
+    .eligibility-strip-track {
+        flex: 0 1 4.5rem;
+        width: 4.5rem;
+        height: 3px;
+        overflow: hidden;
+        border-radius: 9999px;
+        background: #E2E8F0;
+    }
+
+    @media (min-width: 640px) {
+        .eligibility-strip-track {
+            flex-basis: 5.5rem;
+            width: 5.5rem;
+        }
+    }
+
+    .eligibility-strip-fill {
+        display: block;
+        height: 100%;
+        border-radius: 9999px;
+        background: #2563EB;
+        transition: width 0.3s ease-out;
+    }
+
+    .eligibility-strip-chevron {
+        width: 0.75rem;
+        height: 0.75rem;
+        color: rgba(15, 23, 42, 0.38);
+        transition: transform 0.2s ease, color 0.15s ease;
+    }
+
+    .eligibility-strip-toggle:hover .eligibility-strip-chevron {
+        color: rgba(15, 23, 42, 0.55);
+    }
+
+    .eligibility-strip-panel {
+        margin-top: 0.375rem;
+        border-radius: 0.5rem;
+        border: 1px solid #E2E8F0;
+        background: #FFFFFF;
+        padding: 0;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+    }
+
+    .eligibility-strip-panel-header {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.75rem 0.875rem 0.5rem;
+        border-bottom: 1px solid #F1F5F9;
+        background: #FFFFFF;
+        box-shadow: 0 1px 0 rgba(241, 245, 249, 0.9);
+    }
+
+    .eligibility-strip-panel-title {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: rgba(15, 23, 42, 0.45);
+    }
+
+    .eligibility-strip-panel-count {
+        flex-shrink: 0;
+        border-radius: 9999px;
+        background: #F1F5F9;
+        padding: 0.125rem 0.5rem;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        line-height: 1.25;
+        color: rgba(15, 23, 42, 0.72);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .eligibility-strip-panel-body {
+        padding: 0.5rem 0.875rem 1rem;
+    }
+
+    .eligibility-strip-panel-next {
+        margin: 0 0 0.5rem;
+        padding: 0.375rem 0.5rem;
+        border-radius: 0.25rem;
+        background: #F8FAFC;
+        font-size: 0.6875rem;
+        line-height: 1.4;
+        color: rgba(15, 23, 42, 0.62);
+    }
+
+    .eligibility-strip-panel-next strong {
+        font-weight: 600;
+        color: #2563EB;
+    }
+
+    .eligibility-strip-panel-next.hidden {
+        display: none;
+    }
+
+    .eligibility-strip-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+        padding-bottom: 0.25rem;
+    }
+
+    .eligibility-criterion-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        border-radius: 0.25rem;
+        padding: 0.3125rem 0.25rem;
+    }
+
+    .eligibility-criterion-row.is-next {
+        background: #F8FAFC;
+    }
+
+    .eligibility-status-dot {
+        margin-top: 0.3rem;
+        height: 0.375rem;
+        width: 0.375rem;
+        flex-shrink: 0;
+        border-radius: 9999px;
+    }
+
+    .eligibility-status-dot--known {
+        background: #22C55E;
+    }
+
+    .eligibility-status-dot--missing {
+        background: #CBD5E1;
+    }
+
+    .eligibility-status-dot--disqualified {
+        background: #F87171;
+    }
+
+    .eligibility-status-dot--skipped {
+        background: #94A3B8;
+    }
+
+    .eligibility-criterion-label {
+        font-size: 0.75rem;
+        line-height: 1.35;
+        color: #0F172A;
+    }
+
+    .eligibility-criterion-next {
+        display: block;
+        margin-top: 0.0625rem;
+        font-size: 0.625rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #2563EB;
+    }
+
+    .eligibility-group-title {
+        margin: 0.25rem 0 0.125rem;
+        font-size: 0.625rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #94A3B8;
+    }
+
+    .eligibility-group:first-child .eligibility-group-title {
+        margin-top: 0;
+    }
+</style>
+{{ eligibility_progress|json_script:"eligibility-progress-initial" }}
+<script>
+    const AI_MARKDOWN_CLASSES =
+        "ai-markdown prose prose-stone max-w-none text-[0.9375rem] prose-headings:font-serif prose-headings:font-medium prose-headings:tracking-tight prose-headings:text-[#0F172A] prose-p:font-sans prose-p:leading-relaxed prose-p:text-[#0F172A] prose-li:font-sans prose-li:text-[#0F172A] prose-strong:font-semibold prose-strong:text-[#0F172A] prose-a:text-[#0F172A] prose-a:underline prose-a:underline-offset-2 prose-code:rounded prose-code:bg-[#F1F5F9] prose-code:px-1 prose-code:py-0.5 prose-code:text-[#0F172A] prose-pre:rounded-md prose-pre:bg-[#F1F5F9] prose-pre:shadow-none prose-hr:border-[#E2E8F0] shadow-none border-0";
+    const REASONING_TOGGLE_LABEL = "{% trans 'How we reached this' %}";
+    const REASONING_LOADING_LABEL = "{% trans 'Explaining…' %}";
+    const REASONING_ERROR_TEXT = "{% trans 'Could not load the explanation. Please try again.' %}";
+
+    function getReasoningConfig() {
+        const list = document.getElementById("messages-list");
+        const tokenEl = document.getElementById("page-csrf-token");
+        const form = document.getElementById("chat-form");
+        const csrfFromForm =
+            form &&
+            form.querySelector("[name=csrfmiddlewaretoken]") &&
+            form.querySelector("[name=csrfmiddlewaretoken]").value;
+        return {
+            reasoningUrl: list ? list.dataset.reasoningUrl : "",
+            csrfToken: (tokenEl && tokenEl.value) || csrfFromForm || "",
+        };
+    }
+
+    function getMessageRaw(element) {
+        if (!element) return "";
+        if (element._rawMarkdown) return element._rawMarkdown;
+        const scriptId = element.getAttribute("data-raw-script");
+        if (scriptId) {
+            const scriptEl = document.getElementById(scriptId);
+            if (scriptEl) return JSON.parse(scriptEl.textContent);
+        }
+        return "";
+    }
+
+    function renderAiMarkdown(element) {
+        if (!element || typeof marked === "undefined") return;
+        const raw = getMessageRaw(element);
+        if (!raw) return;
+        marked.setOptions({ breaks: true, gfm: true });
+        element.innerHTML = marked.parse(raw);
+    }
+
+    function findConclusionInsertPoint(contentEl) {
+        if (!contentEl) return null;
+        const headings = contentEl.querySelectorAll("h3");
+        let conclusionHeading = null;
+        for (const heading of headings) {
+            if (/conclusion/i.test(heading.textContent || "")) {
+                conclusionHeading = heading;
+                break;
+            }
+        }
+        if (!conclusionHeading) return null;
+
+        let insertAfter = conclusionHeading;
+        let sibling = conclusionHeading.nextElementSibling;
+        while (sibling && sibling.tagName !== "H3") {
+            insertAfter = sibling;
+            sibling = sibling.nextElementSibling;
+        }
+        return insertAfter;
+    }
+
+    function buildReasoningDisclosure() {
+        const wrap = document.createElement("div");
+        wrap.className = "konya-reasoning-wrap not-prose";
+        wrap.innerHTML =
+            '<button type="button" class="konya-reasoning-toggle" aria-expanded="false">' +
+            '<span class="konya-reasoning-label"></span>' +
+            '<svg class="konya-reasoning-chevron h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">' +
+            '<path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/>' +
+            "</svg></button>" +
+            '<div class="konya-reasoning-panel" hidden>' +
+            '<div class="konya-reasoning-content"></div>' +
+            "</div>";
+        wrap.querySelector(".konya-reasoning-label").textContent = REASONING_TOGGLE_LABEL;
+        return wrap;
+    }
+
+    async function fetchReasoningTrace() {
+        const config = getReasoningConfig();
+        if (!config.reasoningUrl) {
+            throw new Error("Missing reasoning URL");
+        }
+        const body = new FormData();
+        body.append("csrfmiddlewaretoken", config.csrfToken);
+        const response = await fetch(config.reasoningUrl, {
+            method: "POST",
+            headers: { "X-Requested-With": "XMLHttpRequest" },
+            body: body,
+        });
+        const data = await response.json().catch(function () {
+            return null;
+        });
+        if (!response.ok || !data || !data.reasoning_trace) {
+            throw new Error((data && data.error) || REASONING_ERROR_TEXT);
+        }
+        return data.reasoning_trace;
+    }
+
+    function enhanceBlueprintMessage(contentEl) {
+        if (!contentEl || contentEl.dataset.reasoningEnhanced === "true") return;
+        if (contentEl.dataset.isBlueprint !== "true" && !contentEl.classList.contains("is-blueprint-message")) {
+            return;
+        }
+
+        const insertAfter = findConclusionInsertPoint(contentEl);
+        if (!insertAfter) return;
+
+        const disclosure = buildReasoningDisclosure();
+        const toggle = disclosure.querySelector(".konya-reasoning-toggle");
+        const panel = disclosure.querySelector(".konya-reasoning-panel");
+        const reasoningContent = disclosure.querySelector(".konya-reasoning-content");
+        const label = disclosure.querySelector(".konya-reasoning-label");
+        let loaded = false;
+        let loading = false;
+
+        toggle.addEventListener("click", async function () {
+            const isOpen = toggle.getAttribute("aria-expanded") === "true";
+            if (isOpen) {
+                toggle.setAttribute("aria-expanded", "false");
+                panel.hidden = true;
+                return;
+            }
+
+            if (!loaded && !loading) {
+                loading = true;
+                toggle.disabled = true;
+                label.textContent = REASONING_LOADING_LABEL;
+                try {
+                    const trace = await fetchReasoningTrace();
+                    if (typeof marked !== "undefined") {
+                        marked.setOptions({ breaks: true, gfm: true });
+                        reasoningContent.innerHTML = marked.parse(trace);
+                    } else {
+                        reasoningContent.textContent = trace;
+                    }
+                    loaded = true;
+                } catch (err) {
+                    reasoningContent.textContent = err.message || REASONING_ERROR_TEXT;
+                    loaded = true;
+                } finally {
+                    loading = false;
+                    toggle.disabled = false;
+                    label.textContent = REASONING_TOGGLE_LABEL;
+                }
+            }
+
+            toggle.setAttribute("aria-expanded", "true");
+            panel.hidden = false;
+        });
+
+        insertAfter.insertAdjacentElement("afterend", disclosure);
+        contentEl.dataset.reasoningEnhanced = "true";
+    }
+
+    function enhanceAllBlueprintMessages() {
+        document.querySelectorAll('[data-is-blueprint="true"], .is-blueprint-message').forEach(function (el) {
+            renderAiMarkdown(el);
+            enhanceBlueprintMessage(el);
+        });
+    }
+
+    const PROGRESS_CHECKING = "{% trans 'Checking eligibility' %}";
+    const PROGRESS_CONFIRMED_FMT = "{% trans '%(confirmed)s of %(total)s confirmed' %}";
+    const PROGRESS_GROUP_MISSING = "{% trans 'Still needed' %}";
+    const PROGRESS_GROUP_KNOWN = "{% trans 'Confirmed' %}";
+    const PROGRESS_GROUP_DISQUALIFIED = "{% trans 'May not qualify' %}";
+    const PROGRESS_GROUP_SKIPPED = "{% trans 'Not applicable' %}";
+    const PROGRESS_NEXT_UP = "{% trans 'Next up' %}";
+
+    let progressPanelOpen = false;
+
+    function formatProgressConfirmed(confirmed, total) {
+        return PROGRESS_CONFIRMED_FMT
+            .replace("%(confirmed)s", String(confirmed))
+            .replace("%(total)s", String(total));
+    }
+
+    function buildCriterionRow(item, nextUpLabel) {
+        const row = document.createElement("div");
+        row.className = "eligibility-criterion-row" + (item.is_next ? " is-next" : "");
+
+        const dot = document.createElement("span");
+        dot.className = "eligibility-status-dot eligibility-status-dot--" + (item.status || "missing");
+        dot.setAttribute("aria-hidden", "true");
+
+        const textWrap = document.createElement("div");
+        textWrap.className = "min-w-0 flex-1";
+
+        const label = document.createElement("span");
+        label.className = "eligibility-criterion-label";
+        label.textContent = item.label || item.key || "";
+
+        textWrap.appendChild(label);
+
+        if (item.is_next) {
+            const nextTag = document.createElement("span");
+            nextTag.className = "eligibility-criterion-next";
+            nextTag.textContent = nextUpLabel || PROGRESS_NEXT_UP;
+            textWrap.appendChild(nextTag);
+        }
+
+        row.appendChild(dot);
+        row.appendChild(textWrap);
+        return row;
+    }
+
+    function buildCriteriaGroup(title, count, items, nextUpLabel) {
+        const group = document.createElement("div");
+        group.className = "eligibility-group";
+
+        const heading = document.createElement("p");
+        heading.className = "eligibility-group-title";
+        heading.textContent = title + " (" + count + ")";
+        group.appendChild(heading);
+
+        items.forEach(function (item) {
+            group.appendChild(buildCriterionRow(item, nextUpLabel));
+        });
+
+        return group;
+    }
+
+    function renderCriteriaList(container, data) {
+        if (!container || !data) return;
+        container.innerHTML = "";
+
+        const criteria = data.criteria || [];
+        if (!criteria.length) return;
+
+        const groupLabels = data.group_labels || {
+            missing: PROGRESS_GROUP_MISSING,
+            known: PROGRESS_GROUP_KNOWN,
+            disqualified: PROGRESS_GROUP_DISQUALIFIED,
+            skipped: PROGRESS_GROUP_SKIPPED,
+        };
+
+        if (data.use_groups) {
+            const groups = [
+                { key: "missing", title: groupLabels.missing || PROGRESS_GROUP_MISSING },
+                { key: "known", title: groupLabels.known || PROGRESS_GROUP_KNOWN },
+                { key: "disqualified", title: groupLabels.disqualified || PROGRESS_GROUP_DISQUALIFIED },
+                { key: "skipped", title: groupLabels.skipped || PROGRESS_GROUP_SKIPPED },
+            ];
+            groups.forEach(function (group) {
+                const items = criteria.filter(function (item) {
+                    return item.status === group.key;
+                });
+                if (items.length) {
+                    container.appendChild(buildCriteriaGroup(group.title, items.length, items, data.next_up_label));
+                }
+            });
+            return;
+        }
+
+        criteria.forEach(function (item) {
+            container.appendChild(buildCriterionRow(item, data.next_up_label));
+        });
+    }
+
+    function setProgressPanelOpen(open) {
+        const wrap = document.getElementById("eligibility-progress-wrap");
+        const panel = document.getElementById("eligibility-progress-panel");
+        const toggle = document.getElementById("eligibility-progress-toggle");
+        if (!wrap || !panel || !toggle) return;
+
+        progressPanelOpen = open;
+        wrap.classList.toggle("is-open", open);
+        toggle.setAttribute("aria-expanded", open ? "true" : "false");
+        panel.hidden = !open;
+        panel.classList.toggle("hidden", !open);
+    }
+
+    function updateEligibilityProgress(data) {
+        const wrap = document.getElementById("eligibility-progress-wrap");
+        const summary = document.getElementById("eligibility-progress-summary");
+        const panelCount = document.getElementById("eligibility-progress-panel-count");
+        const panelNext = document.getElementById("eligibility-progress-panel-next");
+        const bar = document.getElementById("eligibility-progress-bar");
+        const list = document.getElementById("eligibility-progress-list");
+
+        if (!wrap || !summary || !bar || !list) return;
+
+        if (!data || !data.visible) {
+            wrap.classList.add("hidden");
+            setProgressPanelOpen(false);
+            return;
+        }
+
+        wrap.classList.remove("hidden");
+
+        const percent = Math.max(0, Math.min(100, data.percent || 0));
+        const summaryText =
+            data.summary ||
+            PROGRESS_CHECKING + " · " + formatProgressConfirmed(data.confirmed || 0, data.total || 0);
+
+        summary.textContent = summaryText;
+
+        if (panelCount) {
+            panelCount.textContent = (data.confirmed || 0) + " / " + (data.total || 0);
+        }
+
+        if (panelNext) {
+            if (data.next_label) {
+                const nextLabel = data.next_up_label || PROGRESS_NEXT_UP;
+                panelNext.innerHTML =
+                    "<strong>" + nextLabel + ":</strong> " + escapeHtmlText(data.next_label);
+                panelNext.classList.remove("hidden");
+            } else {
+                panelNext.textContent = "";
+                panelNext.classList.add("hidden");
+            }
+        }
+
+        bar.style.width = percent + "%";
+
+        renderCriteriaList(list, data);
+    }
+
+    function escapeHtmlText(text) {
+        const el = document.createElement("span");
+        el.textContent = text || "";
+        return el.innerHTML;
+    }
+
+    function bindEligibilityProgressToggle() {
+        const toggle = document.getElementById("eligibility-progress-toggle");
+        if (!toggle || toggle.dataset.bound === "true") return;
+        toggle.dataset.bound = "true";
+
+        toggle.addEventListener("click", function (event) {
+            event.stopPropagation();
+            setProgressPanelOpen(!progressPanelOpen);
+        });
+
+        document.addEventListener("click", function (event) {
+            const wrap = document.getElementById("eligibility-progress-wrap");
+            if (!progressPanelOpen || !wrap) return;
+            if (!wrap.contains(event.target)) {
+                setProgressPanelOpen(false);
+            }
+        });
+    }
+
+    function loadInitialEligibilityProgress() {
+        const scriptEl = document.getElementById("eligibility-progress-initial");
+        if (!scriptEl) return;
+        try {
+            const data = JSON.parse(scriptEl.textContent);
+            updateEligibilityProgress(data);
+        } catch (err) {
+            /* ignore malformed initial payload */
+        }
+    }
+
+    function applyEligibilityProgressFromResponse(data) {
+        if (data && data.eligibility_progress) {
+            updateEligibilityProgress(data.eligibility_progress);
+        }
+        if (data && data.navigation_complete) {
+            updateEligibilityProgress({ visible: false });
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const timeline = document.getElementById("message-timeline");
+        const messagesList = document.getElementById("messages-list");
+        const chatActionUrl = messagesList ? messagesList.dataset.chatUrl : "";
+        const chatForm = document.getElementById("chat-form");
+        const policyForm = document.getElementById("policy-form");
+        const policyUploadBlock = document.getElementById("policy-upload-block");
+        const policyResubmitText = document.getElementById("policy-resubmit-text");
+        const policyFileInput = document.getElementById("policy-file-input");
+        const policyFileName = document.getElementById("policy-file-name");
+        const policyFileLabel = document.getElementById("policy-file-label");
+        const policySubmitButton = document.getElementById("policy-submit-button");
+        const policySubmitSpinner = document.getElementById("policy-submit-spinner");
+        const policyFormErrors = document.getElementById("policy-form-errors");
+        const replyInput = document.getElementById("reply-input");
+        const sendButton = document.getElementById("send-button");
+        const sendIcon = document.getElementById("send-icon");
+        const sendSpinner = document.getElementById("send-spinner");
+        const headerStateDots = document.getElementById("header-state-dots");
+        const chatInputArea = document.getElementById("chat-input-area");
+        const chatTitleHeader = document.getElementById("chat-title-header");
+        const processingIndicator = document.getElementById("processing-indicator");
+        const followUpHint = "{% trans 'Follow-up answers are limited to your uploaded policy document.' %}";
+        const followUpPlaceholder = "{% trans 'Ask a follow-up about your policy document…' %}";
+        const navPlaceholder = "{% trans 'Answer the navigator or share more context…' %}";
+        const processingUnlockText = "{% trans 'The conversation will unlock once your document has been reviewed.' %}";
+        const policyUnlockText = "{% trans 'Submit a matching policy document above to unlock the conversation.' %}";
+        const referenceLinkLabel = "{% trans 'Reference link' %}";
+        const supportingDocumentLabel = "{% trans 'Supporting document' %}";
+        const chatSendErrorText = "{% trans 'Could not send your message. Please try again.' %}";
+        const processingErrorText = "{% trans 'Something went wrong while processing your document. Please try again.' %}";
+        const processingTitleText = "{% trans 'Processing document…' %}";
+        const processingDetailText = "{% trans 'Reviewing your policy link or PDF against your situation. This usually takes a moment.' %}";
+        const retryProcessingLabel = "{% trans 'Try again' %}";
+        const csrfToken =
+            (document.getElementById("page-csrf-token") || {}).value ||
+            ((chatForm || policyForm) &&
+                (chatForm || policyForm).querySelector("[name=csrfmiddlewaretoken]") &&
+                (chatForm || policyForm).querySelector("[name=csrfmiddlewaretoken]").value) ||
+            "";
+        const regenerateLabel = chatForm ? chatForm.dataset.regenerateLabel : "Regenerate Response";
+        const copyLabel = chatForm ? chatForm.dataset.copyLabel : "Copy to clipboard";
+
+        let isSubmitting = false;
+        let isProcessingLaunch = false;
+
+        function showProcessingLoadingState() {
+            if (!processingIndicator) return;
+            processingIndicator.dataset.state = "loading";
+            processingIndicator.setAttribute("role", "status");
+            processingIndicator.setAttribute("aria-live", "polite");
+            processingIndicator.innerHTML =
+                '<article class="flex items-start gap-3 rounded-md bg-[#F1F5F9] px-4 py-4 shadow-none border-0 border-transparent sm:items-center sm:gap-4 sm:px-5 sm:py-4">' +
+                '<svg class="h-5 w-5 shrink-0 animate-spin text-[#0F172A]/50" fill="none" viewBox="0 0 24 24" aria-hidden="true">' +
+                '<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>' +
+                '<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>' +
+                "</svg>" +
+                "<div>" +
+                '<p class="text-sm font-medium text-[#0F172A]">' +
+                processingTitleText +
+                "</p>" +
+                '<p class="mt-1 text-xs leading-relaxed text-[#0F172A]/55">' +
+                processingDetailText +
+                "</p>" +
+                "</div></article>";
+        }
+
+        function showProcessingErrorState(message) {
+            if (!processingIndicator) return;
+            processingIndicator.dataset.state = "error";
+            processingIndicator.setAttribute("role", "alert");
+            processingIndicator.setAttribute("aria-live", "assertive");
+            processingIndicator.innerHTML =
+                '<article class="rounded-md bg-[#F1F5F9] px-4 py-4 shadow-none border-0 border-transparent sm:px-5 sm:py-4">' +
+                '<p class="text-sm leading-relaxed text-[#0F172A]/80"></p>' +
+                '<button type="button" data-retry-processing class="mt-4 inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-[#0F172A]/60 transition-colors hover:bg-[#0F172A]/5 hover:text-[#0F172A] shadow-none border-0 border-transparent bg-transparent">' +
+                '<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">' +
+                '<path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182"/>' +
+                "</svg>" +
+                '<span class="retry-processing-label"></span></button></article>';
+            processingIndicator.querySelector("p").textContent = message || processingErrorText;
+            const label = processingIndicator.querySelector(".retry-processing-label");
+            if (label) {
+                label.textContent = retryProcessingLabel;
+            }
+            const retryBtn = processingIndicator.querySelector("[data-retry-processing]");
+            if (retryBtn) {
+                retryBtn.addEventListener("click", function () {
+                    processInitialNavigation({ force: true });
+                });
+            }
+        }
+
+        function scrollToBottom() {
+            if (timeline) {
+                timeline.scrollTo({ top: timeline.scrollHeight, behavior: "smooth" });
+            }
+        }
+
+        function updateChatTitle(title) {
+            if (!title) return;
+            if (chatTitleHeader) {
+                chatTitleHeader.textContent = title;
+            }
+            document.title = title + " — Konya";
+            const chatId = messagesList ? messagesList.dataset.chatId : "";
+            if (chatId) {
+                const sidebarLink = document.querySelector(
+                    '[data-sidebar-chat-id="' + chatId + '"]'
+                );
+                if (sidebarLink) {
+                    sidebarLink.textContent = title;
+                }
+            }
+        }
+
+        function hideChatFormError() {
+            const form = document.getElementById("chat-form");
+            const errorEl = form && form.querySelector("[data-chat-form-error]");
+            if (errorEl) {
+                errorEl.classList.add("hidden");
+                errorEl.textContent = "";
+            }
+        }
+
+        function showChatFormError(message) {
+            const form = document.getElementById("chat-form");
+            if (!form) return;
+            let errorEl = form.querySelector("[data-chat-form-error]");
+            if (!errorEl) {
+                errorEl = document.createElement("p");
+                errorEl.dataset.chatFormError = "true";
+                errorEl.className =
+                    "mt-2 rounded-md border border-[#0F172A]/15 bg-[#F8FAFC] px-3 py-2.5 text-sm text-[#0F172A]/80";
+                form.appendChild(errorEl);
+            }
+            errorEl.textContent = message;
+            errorEl.classList.remove("hidden");
+        }
+
+        function enableFollowUpMode() {
+            const form = document.getElementById("chat-form");
+            const input = document.getElementById("reply-input");
+            if (!form || !input) return;
+            form.dataset.followUpMode = "true";
+            input.placeholder = followUpPlaceholder;
+            let hint = form.querySelector("[data-follow-up-hint]");
+            if (!hint) {
+                hint = document.createElement("p");
+                hint.dataset.followUpHint = "true";
+                hint.className = "mt-2 text-center text-xs leading-relaxed text-[#0F172A]/45";
+                hint.textContent = followUpHint;
+                form.appendChild(hint);
+            }
+        }
+
+        function unlockChatInput() {
+            if (!chatInputArea || !messagesList) return;
+            const chatUrl = messagesList.dataset.chatUrl;
+            chatInputArea.innerHTML =
+                '<form id="chat-form" method="post" action="' +
+                chatUrl +
+                '" class="mx-auto w-full max-w-3xl" data-regenerate-label="' +
+                regenerateLabel +
+                '" data-copy-label="' +
+                copyLabel +
+                '" data-follow-up-mode="false">' +
+                '<input type="hidden" name="csrfmiddlewaretoken" value="' +
+                csrfToken +
+                '">' +
+                '<div class="flex items-end gap-3 rounded-2xl bg-[#F1F5F9] px-4 py-4 shadow-none border-0 border-transparent">' +
+                '<label for="reply-input" class="sr-only">Reply</label>' +
+                '<textarea id="reply-input" name="content" rows="2" required placeholder="' +
+                navPlaceholder +
+                '" class="min-h-[2.75rem] max-h-40 flex-1 resize-none bg-transparent px-2 py-2 text-sm leading-relaxed text-[#0F172A] placeholder:text-[#0F172A]/40 shadow-none border-0 border-transparent outline-none ring-0 focus:border-0 focus:outline-none focus:ring-0 read-only:cursor-not-allowed read-only:opacity-60"></textarea>' +
+                '<button id="send-button" type="submit" class="mb-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#2563EB] text-white transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-50 shadow-none border-0 border-transparent">' +
+                '<span id="send-label" class="sr-only">Send</span>' +
+                '<svg id="send-icon" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18"/></svg>' +
+                '<svg id="send-spinner" class="hidden h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>' +
+                "</button></div></form>";
+            bindChatForm();
+        }
+
+        function bindChatForm() {
+            const form = document.getElementById("chat-form");
+            const input = document.getElementById("reply-input");
+            if (!form || !input || form.dataset.bound === "true") return;
+            form.dataset.bound = "true";
+
+            form.addEventListener("submit", handleChatSubmit);
+            input.addEventListener("keydown", function (event) {
+                if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    if (!isSubmitting) {
+                        form.requestSubmit();
+                    }
+                }
+            });
+
+            if (form.dataset.followUpMode === "true") {
+                enableFollowUpMode();
+            }
+        }
+
+        async function handleChatSubmit(event) {
+            event.preventDefault();
+            const form = document.getElementById("chat-form");
+            const input = document.getElementById("reply-input");
+            if (!form || !input || isSubmitting) return;
+
+            const content = input.value.trim();
+            if (!content) return;
+
+            hideChatFormError();
+            input.value = "";
+            appendUserMessage(content);
+            scrollToBottom();
+            setLoading(true);
+
+            try {
+                const data = await submitMessage(content, form.action);
+                if (data.ai_message) {
+                    appendAiMessage(data.ai_message);
+                }
+                if (data.chat_title) {
+                    updateChatTitle(data.chat_title);
+                }
+                if (data.navigation_complete) {
+                    enableFollowUpMode();
+                }
+                applyEligibilityProgressFromResponse(data);
+                scrollToBottom();
+            } catch (err) {
+                showChatFormError(err.message || chatSendErrorText);
+            } finally {
+                setLoading(false);
+                if (input) {
+                    input.focus();
+                }
+            }
+        }
+
+        function setLoading(active) {
+            isSubmitting = active;
+            const input = document.getElementById("reply-input");
+            const button = document.getElementById("send-button");
+            const icon = document.getElementById("send-icon");
+            const spinner = document.getElementById("send-spinner");
+            if (input) {
+                input.readOnly = active;
+            }
+            if (button) {
+                button.disabled = active;
+            }
+            if (icon && spinner) {
+                icon.classList.toggle("hidden", active);
+                spinner.classList.toggle("hidden", !active);
+            }
+            if (headerStateDots) {
+                headerStateDots.classList.toggle("is-active", active);
+            }
+            if (active) {
+                scrollToBottom();
+            }
+        }
+
+        function removeEmptyPlaceholder() {
+            if (!messagesList) return;
+            const placeholder = messagesList.querySelector("[data-empty-placeholder]");
+            if (placeholder) {
+                placeholder.remove();
+            }
+        }
+
+        function buildAttachmentMarkup(attachedUrl, attachedFileName, attachedFileUrl) {
+            let html = "";
+            if (attachedUrl) {
+                html +=
+                    '<a href="' +
+                    attachedUrl +
+                    '" target="_blank" rel="noopener noreferrer" class="flex items-start gap-2.5 rounded-md px-2 py-2 text-left no-underline transition-colors hover:bg-[#0F172A]/5 shadow-none border-0 border-transparent">' +
+                    '<svg class="mt-0.5 h-4 w-4 shrink-0 text-[#0F172A]/45" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"/></svg>' +
+                    '<span class="min-w-0"><span class="block text-[10px] font-medium uppercase tracking-wider text-[#0F172A]/45">' +
+                    referenceLinkLabel +
+                    '</span><span class="mt-0.5 block truncate text-xs leading-snug text-[#0F172A]/75 underline decoration-[#0F172A]/25 underline-offset-2">' +
+                    attachedUrl +
+                    "</span></span></a>";
+            }
+            if (attachedFileName) {
+                html +=
+                    '<a href="' +
+                    (attachedFileUrl || "#") +
+                    '" target="_blank" rel="noopener noreferrer" class="flex items-start gap-2.5 rounded-md px-2 py-2 text-left no-underline transition-colors hover:bg-[#0F172A]/5 shadow-none border-0 border-transparent">' +
+                    '<svg class="mt-0.5 h-4 w-4 shrink-0 text-[#0F172A]/45" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>' +
+                    '<span class="min-w-0"><span class="block text-[10px] font-medium uppercase tracking-wider text-[#0F172A]/45">' +
+                    supportingDocumentLabel +
+                    '</span><span class="mt-0.5 block truncate text-xs leading-snug text-[#0F172A]/75 underline decoration-[#0F172A]/25 underline-offset-2">' +
+                    attachedFileName +
+                    "</span></span></a>";
+            }
+            return html;
+        }
+
+        function appendUserMessage(content, messageId, attachments) {
+            if (!messagesList) return;
+
+            removeEmptyPlaceholder();
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "flex justify-end";
+            const hasContent = Boolean(content && String(content).trim());
+            const attachmentHtml =
+                attachments && (attachments.attached_url || attachments.attached_file_name)
+                    ? buildAttachmentMarkup(
+                          attachments.attached_url,
+                          attachments.attached_file_name,
+                          attachments.attached_file_url
+                      )
+                    : "";
+
+            let articleHtml =
+                '<article class="w-fit min-w-[5.5rem] max-w-[92%] rounded-md bg-[#E2E8F0] px-4 py-3.5 shadow-none border-0 border-transparent sm:max-w-[88%] sm:px-5 sm:py-4" data-message-id="' +
+                (messageId || "pending") +
+                '">';
+
+            if (hasContent) {
+                articleHtml += '<p class="whitespace-pre-wrap text-[0.9375rem] leading-relaxed text-[#0F172A]"></p>';
+            }
+
+            if (attachmentHtml) {
+                articleHtml +=
+                    '<div class="' +
+                    (hasContent ? "mt-4 border-t border-[#0F172A]/10 pt-4 " : "") +
+                    'space-y-2">' +
+                    attachmentHtml +
+                    "</div>";
+            }
+
+            articleHtml += "</article>";
+            wrapper.innerHTML = articleHtml;
+
+            if (hasContent) {
+                wrapper.querySelector("p").textContent = content;
+            }
+
+            messagesList.appendChild(wrapper);
+        }
+
+        function appendUserMessageFromPayload(message) {
+            if (!message) return;
+            appendUserMessage(message.content, message.id, message);
+        }
+
+        function buildCopyButton(messageId) {
+            const copyWrap = document.createElement("div");
+            copyWrap.className = "mt-2 flex";
+            copyWrap.innerHTML =
+                '<button type="button" class="copy-message-btn rounded-md p-1.5 text-[#0F172A]/30 transition-colors hover:bg-[#0F172A]/5 hover:text-[#0F172A]/60 shadow-none border-0 border-transparent bg-transparent opacity-0 group-hover/message:opacity-100" aria-label="' +
+                copyLabel +
+                '" data-copy-target="message-content-' +
+                messageId +
+                '">' +
+                '<svg class="copy-icon h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">' +
+                '<path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9.75a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 1.927-.184"/>' +
+                "</svg>" +
+                '<svg class="check-icon hidden h-4 w-4 text-[#0F172A]/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">' +
+                '<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>' +
+                "</svg></button>";
+            return copyWrap;
+        }
+
+        function showPolicyUploadBlock() {
+            if (!policyUploadBlock) return;
+            policyUploadBlock.classList.remove("hidden");
+        }
+
+        function movePolicyUploadBlockToEnd() {
+            if (!messagesList || !policyUploadBlock) return;
+            messagesList.appendChild(policyUploadBlock);
+        }
+
+        function gatekeeperMessageExists(messageId) {
+            if (!messagesList || !messageId) return false;
+            return Boolean(messagesList.querySelector('[data-message-id="' + messageId + '"]'));
+        }
+
+        function appendGatekeeperMessageToThread(rejectionText, messageId) {
+            if (!messagesList || !rejectionText) return;
+            if (messageId && gatekeeperMessageExists(messageId)) return;
+
+            removeEmptyPlaceholder();
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "group/message w-full";
+            if (messageId) {
+                wrapper.dataset.messageId = messageId;
+            }
+            wrapper.innerHTML =
+                '<article class="rounded-md bg-[#F1F5F9] px-4 py-4 shadow-none border-0 border-transparent sm:px-5 sm:py-4">' +
+                '<p class="text-sm leading-relaxed text-[#0F172A]/80"></p>' +
+                "</article>";
+            wrapper.querySelector("p").textContent = rejectionText;
+
+            if (policyUploadBlock && policyUploadBlock.parentNode === messagesList) {
+                messagesList.insertBefore(wrapper, policyUploadBlock);
+            } else {
+                messagesList.appendChild(wrapper);
+            }
+        }
+
+        function promoteActiveGatekeeperToThread() {
+            if (!policyUploadBlock) return;
+
+            const messageId = policyUploadBlock.dataset.activeGatekeeperId;
+            const text = policyResubmitText ? policyResubmitText.textContent.trim() : "";
+            if (!messageId || !text) return;
+
+            appendGatekeeperMessageToThread(text, messageId);
+            delete policyUploadBlock.dataset.activeGatekeeperId;
+        }
+
+        function showGatekeeperResubmit(rejectionText, messageId) {
+            if (policyResubmitText && rejectionText) {
+                policyResubmitText.textContent = rejectionText;
+            }
+            if (policyUploadBlock && messageId) {
+                policyUploadBlock.dataset.activeGatekeeperId = String(messageId);
+            }
+            showPolicyUploadBlock();
+            movePolicyUploadBlockToEnd();
+        }
+
+        function showPolicyUnlockNotice() {
+            if (!chatInputArea) return;
+            chatInputArea.innerHTML =
+                '<div class="mx-auto w-full max-w-3xl rounded-md bg-[#F1F5F9] px-5 py-4 text-center text-sm text-[#0F172A]/55">' +
+                policyUnlockText +
+                "</div>";
+        }
+
+        function appendAiMessage(aiMessage) {
+            if (!messagesList) return;
+
+            removeEmptyPlaceholder();
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "group/message w-full";
+            wrapper.dataset.messageId = aiMessage.id;
+
+            if (aiMessage.is_error) {
+                wrapper.innerHTML =
+                    '<p class="text-sm leading-relaxed text-[#0F172A]/80"></p>' +
+                    '<form method="post" class="mt-4 regenerate-form">' +
+                    '<input type="hidden" name="csrfmiddlewaretoken" value="' +
+                    csrfToken +
+                    '">' +
+                    '<input type="hidden" name="action" value="regenerate">' +
+                    '<button type="submit" class="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-[#0F172A]/60 transition-colors hover:bg-[#0F172A]/5 hover:text-[#0F172A] shadow-none border-0 border-transparent bg-transparent">' +
+                    '<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">' +
+                    '<path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182"/>' +
+                    "</svg>" +
+                    regenerateLabel +
+                    "</button></form>";
+                wrapper.querySelector("p").textContent = aiMessage.content;
+            } else if (aiMessage.is_gatekeeper) {
+                showGatekeeperResubmit(aiMessage.content, aiMessage.id);
+                return;
+            } else {
+                const contentDiv = document.createElement("div");
+                contentDiv.id = "message-content-" + aiMessage.id;
+                contentDiv.className = AI_MARKDOWN_CLASSES;
+                contentDiv._rawMarkdown = aiMessage.content;
+                renderAiMarkdown(contentDiv);
+                const isBlueprint =
+                    aiMessage.is_blueprint ||
+                    (aiMessage.content &&
+                        aiMessage.content.includes("### Conclusion") &&
+                        aiMessage.content.includes("### What You Need to Prepare"));
+                if (isBlueprint) {
+                    contentDiv.dataset.isBlueprint = "true";
+                    contentDiv.classList.add("is-blueprint-message");
+                }
+                wrapper.appendChild(contentDiv);
+                if (isBlueprint) {
+                    enhanceBlueprintMessage(contentDiv);
+                }
+                wrapper.appendChild(buildCopyButton(aiMessage.id));
+            }
+
+            messagesList.appendChild(wrapper);
+        }
+
+        async function submitMessage(content, actionUrl) {
+            const body = new FormData();
+            body.append("csrfmiddlewaretoken", csrfToken);
+            body.append("content", content);
+
+            const response = await fetch(actionUrl || (document.getElementById("chat-form") || {}).action || "", {
+                method: "POST",
+                headers: { "X-Requested-With": "XMLHttpRequest" },
+                body: body,
+            });
+
+            const data = await response.json().catch(function () {
+                return null;
+            });
+
+            if (!response.ok) {
+                throw new Error((data && data.error) || "Request failed");
+            }
+            if (!data) {
+                throw new Error("Request failed");
+            }
+
+            return data;
+        }
+
+        async function processInitialNavigation(options) {
+            const force = Boolean(options && options.force);
+            if (!messagesList) return;
+            if (!force && messagesList.dataset.needsInitialProcessing !== "true") {
+                return;
+            }
+            if (isProcessingLaunch) return;
+
+            const processUrl = messagesList.dataset.processUrl;
+            if (!processUrl) return;
+
+            isProcessingLaunch = true;
+            showProcessingLoadingState();
+
+            if (headerStateDots) {
+                headerStateDots.classList.add("is-active");
+            }
+            scrollToBottom();
+
+            try {
+                const body = new FormData();
+                body.append("csrfmiddlewaretoken", csrfToken);
+
+                const response = await fetch(processUrl, {
+                    method: "POST",
+                    headers: { "X-Requested-With": "XMLHttpRequest" },
+                    body: body,
+                });
+
+                const data = await response.json().catch(function () {
+                    return null;
+                });
+
+                if (!response.ok || !data) {
+                    const errorMessage =
+                        (data && (data.error || data.detail)) || processingErrorText;
+                    throw new Error(errorMessage);
+                }
+
+                if (data.chat_title) {
+                    updateChatTitle(data.chat_title);
+                }
+
+                if (Array.isArray(data.ai_messages) && data.ai_messages.length) {
+                    data.ai_messages.forEach(function (aiMessage) {
+                        if (aiMessage.is_gatekeeper) {
+                            showGatekeeperResubmit(aiMessage.content, aiMessage.id);
+                        } else {
+                            appendAiMessage(aiMessage);
+                        }
+                    });
+                } else if (data.has_valid_document) {
+                    window.location.reload();
+                    return;
+                }
+
+                if (processingIndicator) {
+                    processingIndicator.remove();
+                }
+                messagesList.dataset.needsInitialProcessing = "false";
+
+                if (data.has_valid_document) {
+                    unlockChatInput();
+                    if (data.navigation_complete) {
+                        enableFollowUpMode();
+                    }
+                } else {
+                    showPolicyUnlockNotice();
+                    if (policyUploadBlock && policyUploadBlock.classList.contains("hidden")) {
+                        showPolicyUploadBlock();
+                    }
+                    movePolicyUploadBlockToEnd();
+                }
+
+                applyEligibilityProgressFromResponse(data);
+                scrollToBottom();
+            } catch (err) {
+                showProcessingErrorState(err.message || processingErrorText);
+            } finally {
+                isProcessingLaunch = false;
+                if (headerStateDots) {
+                    headerStateDots.classList.remove("is-active");
+                }
+            }
+        }
+
+        function setPolicyLoading(active) {
+            if (!policySubmitButton) return;
+            isSubmitting = active;
+            policySubmitButton.disabled = active;
+            if (policySubmitSpinner) {
+                policySubmitSpinner.classList.toggle("hidden", !active);
+            }
+            if (headerStateDots) {
+                headerStateDots.classList.toggle("is-active", active);
+            }
+            if (active) {
+                scrollToBottom();
+            }
+        }
+
+        function showPolicyErrors(message) {
+            if (!policyFormErrors) return;
+            policyFormErrors.textContent = message;
+            policyFormErrors.classList.remove("hidden");
+        }
+
+        function hidePolicyErrors() {
+            if (!policyFormErrors) return;
+            policyFormErrors.textContent = "";
+            policyFormErrors.classList.add("hidden");
+        }
+
+        if (policyFileInput && policyFileName && policyFileLabel) {
+            policyFileInput.addEventListener("change", function () {
+                if (policyFileInput.files && policyFileInput.files.length > 0) {
+                    policyFileName.textContent = policyFileInput.files[0].name;
+                    policyFileName.classList.remove("hidden");
+                    policyFileLabel.classList.add("hidden");
+                } else {
+                    policyFileName.textContent = "";
+                    policyFileName.classList.add("hidden");
+                    policyFileLabel.classList.remove("hidden");
+                }
+            });
+        }
+
+        if (policyForm) {
+            policyForm.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                if (isSubmitting) return;
+
+                hidePolicyErrors();
+                setPolicyLoading(true);
+
+                try {
+                    const response = await fetch(policyForm.action, {
+                        method: "POST",
+                        headers: { "X-Requested-With": "XMLHttpRequest" },
+                        body: new FormData(policyForm),
+                    });
+
+                    const data = await response.json().catch(function () {
+                        return null;
+                    });
+
+                    if (!response.ok) {
+                        let errorMessage = "Could not submit that document. Please try again.";
+                        if (data) {
+                            if (data.error) {
+                                errorMessage = data.error;
+                            } else if (data.errors) {
+                                if (data.errors.__all__ && data.errors.__all__.length) {
+                                    errorMessage = data.errors.__all__[0];
+                                } else {
+                                    const firstKey = Object.keys(data.errors)[0];
+                                    if (firstKey && data.errors[firstKey].length) {
+                                        errorMessage = data.errors[firstKey][0];
+                                    }
+                                }
+                            }
+                        }
+                        showPolicyErrors(errorMessage);
+                        return;
+                    }
+
+                    if (data.submission_message) {
+                        appendUserMessageFromPayload(data.submission_message);
+                    }
+
+                    if (data.ai_message) {
+                        if (data.ai_message.is_gatekeeper) {
+                            promoteActiveGatekeeperToThread();
+                            showGatekeeperResubmit(data.ai_message.content, data.ai_message.id);
+                        } else {
+                            appendAiMessage(data.ai_message);
+                        }
+                    }
+                    if (data.chat_title) {
+                        updateChatTitle(data.chat_title);
+                    }
+
+                    if (data.valid && data.has_valid_document) {
+                        if (policyUploadBlock) {
+                            policyUploadBlock.remove();
+                        }
+                        unlockChatInput();
+                        if (data.navigation_complete) {
+                            enableFollowUpMode();
+                        }
+                    } else {
+                        policyForm.reset();
+                        if (policyFileName) {
+                            policyFileName.textContent = "";
+                            policyFileName.classList.add("hidden");
+                        }
+                        if (policyFileLabel) {
+                            policyFileLabel.classList.remove("hidden");
+                        }
+                        showPolicyUnlockNotice();
+                        movePolicyUploadBlockToEnd();
+                        scrollToBottom();
+                    }
+
+                    applyEligibilityProgressFromResponse(data);
+                } catch (err) {
+                    showPolicyErrors("Something went wrong. Please try again.");
+                } finally {
+                    setPolicyLoading(false);
+                }
+            });
+        }
+
+        if (document.getElementById("chat-form")) {
+            bindChatForm();
+            if (document.getElementById("chat-form").dataset.followUpMode === "true") {
+                enableFollowUpMode();
+            }
+        }
+
+        processInitialNavigation();
+
+        bindEligibilityProgressToggle();
+        loadInitialEligibilityProgress();
+
+        messagesList.addEventListener("click", async function (event) {
+            const copyBtn = event.target.closest(".copy-message-btn");
+            if (copyBtn) {
+                const targetId = copyBtn.getAttribute("data-copy-target");
+                const contentEl = document.getElementById(targetId);
+                if (!contentEl) return;
+
+                const text = getMessageRaw(contentEl).trim() || contentEl.textContent.trim();
+                const copyIcon = copyBtn.querySelector(".copy-icon");
+                const checkIcon = copyBtn.querySelector(".check-icon");
+
+                copyBtn.classList.remove("opacity-0");
+                copyBtn.classList.add("opacity-100");
+
+                try {
+                    await navigator.clipboard.writeText(text);
+                    if (copyIcon && checkIcon) {
+                        copyIcon.classList.add("hidden");
+                        checkIcon.classList.remove("hidden");
+                        window.setTimeout(function () {
+                            copyIcon.classList.remove("hidden");
+                            checkIcon.classList.add("hidden");
+                        }, 1800);
+                    }
+                } catch (err) {
+                    const range = document.createRange();
+                    range.selectNodeContents(contentEl);
+                    const selection = window.getSelection();
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                    document.execCommand("copy");
+                    selection.removeAllRanges();
+                }
+                return;
+            }
+
+            const regenerateForm = event.target.closest(".regenerate-form");
+            if (regenerateForm && !isSubmitting) {
+                event.preventDefault();
+                const errorBlock = regenerateForm.closest(".group\\/message, [data-message-id]");
+                if (errorBlock) errorBlock.remove();
+
+                setLoading(true);
+                try {
+                    const body = new FormData(regenerateForm);
+                    const response = await fetch(chatActionUrl || (document.getElementById("chat-form") || {}).action || "", {
+                        method: "POST",
+                        headers: { "X-Requested-With": "XMLHttpRequest" },
+                        body: body,
+                    });
+                    if (!response.ok) throw new Error("Regenerate failed");
+                    const data = await response.json();
+                    if (data.ai_message) {
+                        appendAiMessage(data.ai_message);
+                    }
+                    if (data.chat_title) {
+                        updateChatTitle(data.chat_title);
+                    }
+                    applyEligibilityProgressFromResponse(data);
+                    scrollToBottom();
+                } catch (err) {
+                    showChatFormError(chatSendErrorText);
+                } finally {
+                    setLoading(false);
+                }
+            }
+        });
+
+        document.querySelectorAll(".ai-markdown").forEach(renderAiMarkdown);
+        enhanceAllBlueprintMessages();
+        scrollToBottom();
+    });
+</script>
+{% endblock %}

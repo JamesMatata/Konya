@@ -1,0 +1,91 @@
+{% extends "navigator/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Create account" %} — Konya{% endblock %}
+
+{% block content %}
+{% include "navigator/_auth_cancel.html" %}
+<section class="mx-auto flex min-h-screen max-w-md flex-col px-4 pb-10 pt-14 sm:px-6 sm:pt-10 sm:pb-10">
+    <div class="rounded-md border border-gray-300 bg-white px-4 py-3.5 shadow-none">
+        <p class="text-xs font-medium uppercase tracking-wider text-[#0F172A]/50">{% trans "Test environment" %}</p>
+        <p class="mt-1.5 text-sm leading-relaxed text-[#0F172A]/75">
+            {% trans "Use a placeholder email and password. Accounts here are for MVP evaluation only—not real sign-ups." %}
+        </p>
+    </div>
+
+    <header class="mb-8 mt-8 text-center">
+        <h1 class="font-serif text-2xl font-medium tracking-tight text-[#0F172A] sm:text-3xl">{% trans "Create your account" %}</h1>
+        <p class="mt-2 text-sm leading-relaxed text-[#0F172A]/60">{% trans "Start navigating with a clean, persistent history." %}</p>
+    </header>
+
+    <form method="post" novalidate class="space-y-5">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="rounded-md bg-[#F1F5F9] px-4 py-3 text-sm text-[#0F172A]/80 shadow-none border-0 border-transparent">
+                {{ form.non_field_errors.0 }}
+            </div>
+        {% endif %}
+
+        <div class="space-y-2">
+            <label for="{{ form.email.id_for_label }}" class="block text-xs font-medium uppercase tracking-wider text-[#0F172A]/50">
+                {% trans "Email" %}
+            </label>
+            <input
+                type="text"
+                name="email"
+                id="{{ form.email.id_for_label }}"
+                value="{{ form.email.value|default:'' }}"
+                autocomplete="email"
+                placeholder="test@example.com"
+                required
+                class="w-full rounded-md border border-gray-300 bg-[#F8FAFC] px-4 py-3 text-sm text-[#0F172A] placeholder:text-[#0F172A]/40 shadow-none outline-none transition-colors focus:border-[#0F172A]"
+            >
+            {% if form.email.errors %}
+                <p class="text-xs text-[#0F172A]/70">{{ form.email.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <div class="space-y-2">
+            <label for="{{ form.password.id_for_label }}" class="block text-xs font-medium uppercase tracking-wider text-[#0F172A]/50">
+                {% trans "Password" %}
+            </label>
+            <input
+                type="password"
+                name="password"
+                id="{{ form.password.id_for_label }}"
+                autocomplete="new-password"
+                placeholder="{% trans 'Create a password' %}"
+                required
+                class="w-full rounded-md border border-gray-300 bg-[#F8FAFC] px-4 py-3 text-sm text-[#0F172A] placeholder:text-[#0F172A]/40 shadow-none outline-none transition-colors focus:border-[#0F172A]"
+            >
+            {% if form.password.errors %}
+                <p class="text-xs text-[#0F172A]/70">{{ form.password.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <p class="text-center text-xs leading-relaxed text-[#0F172A]/60">
+            {% trans "By registering, you agree to our" %}
+            <a href="{% url 'accounts:terms' %}" class="font-medium text-[#0F172A] underline underline-offset-2">{% trans "Terms of Service" %}</a>
+            {% trans "and" %}
+            <a href="{% url 'accounts:privacy' %}" class="font-medium text-[#0F172A] underline underline-offset-2">{% trans "Privacy Policy" %}</a>.
+        </p>
+
+        <button
+            type="submit"
+            class="w-full rounded-md bg-[#2563EB] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[#1D4ED8] shadow-none border-0 border-transparent"
+        >
+            {% trans "Create account" %}
+        </button>
+    </form>
+
+    <p class="mt-8 text-center text-sm text-[#0F172A]/60">
+        {% trans "Already have an account?" %}
+        <a href="{% url 'accounts:login' %}" class="font-medium text-[#0F172A] no-underline transition-opacity hover:opacity-70">
+            {% trans "Sign in" %}
+        </a>
+    </p>
+
+    {% include "navigator/_oauth_buttons.html" with oauth_disabled=True oauth_footer=True %}
+</section>
+{% endblock %}

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+{% load i18n %}
+<html lang="{{ current_language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Konya{% endblock %}</title>
+
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['Lora', 'Georgia', 'serif'],
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            },
+        };
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:wght@400;500;600&display=swap"
+        rel="stylesheet"
+    >
+
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #F8FAFC;
+        }
+
+        #konya-app {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            overflow: hidden;
+        }
+
+        #konya-app > aside {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #konya-app > .konya-main {
+            flex: 1;
+            min-width: 0;
+            min-height: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #konya-app .konya-main-inner {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #konya-app aside .konya-sidebar-nav {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+        }
+
+        #konya-app aside .konya-sidebar-footer {
+            margin-top: auto;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 1023px) {
+            #konya-app > aside {
+                position: fixed;
+                left: 0;
+                top: 0;
+                z-index: 50;
+                width: 100%;
+                max-width: 100%;
+                transform: translateX(-100%);
+                transition: transform 0.2s ease-in-out;
+                box-shadow: none;
+            }
+
+            #konya-app.sidebar-open > aside {
+                transform: translateX(0);
+            }
+
+            #konya-sidebar-backdrop {
+                display: none;
+                position: fixed;
+                inset: 0;
+                z-index: 40;
+                background-color: rgba(15, 23, 42, 0.45);
+            }
+
+            #konya-app.sidebar-open #konya-sidebar-backdrop {
+                display: block;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            #konya-sidebar-backdrop {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 1023px) {
+            .konya-scroll {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: #0F172A transparent;
+        }
+
+        html::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+
+        html::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        html::-webkit-scrollbar-thumb {
+            background-color: #0F172A;
+            border-radius: 9999px;
+        }
+
+        html::-webkit-scrollbar-thumb:hover {
+            background-color: #1E293B;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: #F8FAFC;
+            color: #0F172A;
+        }
+
+        h1, h2, h3, .font-heading {
+            font-family: 'Lora', Georgia, serif;
+        }
+
+        .konya-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: #0F172A transparent;
+        }
+
+        .konya-scroll::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+
+        .konya-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .konya-scroll::-webkit-scrollbar-thumb {
+            background-color: #0F172A;
+            border-radius: 9999px;
+        }
+
+        .konya-scroll::-webkit-scrollbar-thumb:hover {
+            background-color: #1E293B;
+        }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="font-sans antialiased">
+    <div id="konya-app">
+        <div id="konya-sidebar-backdrop" class="lg:hidden" aria-hidden="true"></div>
+        {% include "navigator/_app_sidebar.html" %}
+
+        <div class="konya-main bg-[#F8FAFC]">
+            {% block mobile_topbar %}
+            <div class="flex shrink-0 items-center justify-between gap-3 border-b border-gray-300 bg-[#F1F5F9] px-4 py-3 lg:hidden">
+                <div class="flex min-w-0 items-center gap-3">
+                    {% include "navigator/_mobile_menu_button.html" %}
+                    <a href="{% url 'navigator:launchpad' %}" class="font-serif text-lg font-medium tracking-tight text-[#0F172A] no-underline">Konya</a>
+                </div>
+                {% include "navigator/_mobile_about_link.html" %}
+            </div>
+            {% endblock %}
+            <div class="konya-main-inner">
+                {% block main %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const app = document.getElementById("konya-app");
+            const backdrop = document.getElementById("konya-sidebar-backdrop");
+            const sidebar = document.getElementById("konya-sidebar");
+            if (!app || !backdrop || !sidebar) return;
+
+            const openButtons = document.querySelectorAll(".konya-sidebar-open");
+            const closeButton = document.getElementById("konya-sidebar-close");
+            const mobileQuery = window.matchMedia("(max-width: 1023px)");
+
+            function setOpen(isOpen) {
+                app.classList.toggle("sidebar-open", isOpen);
+                document.body.style.overflow = isOpen && mobileQuery.matches ? "hidden" : "";
+                openButtons.forEach(function (btn) {
+                    btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+                });
+                if (closeButton) {
+                    closeButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
+                }
+            }
+
+            function openSidebar() {
+                if (mobileQuery.matches) setOpen(true);
+            }
+
+            function closeSidebar() {
+                setOpen(false);
+            }
+
+            openButtons.forEach(function (btn) {
+                btn.addEventListener("click", openSidebar);
+            });
+
+            if (closeButton) {
+                closeButton.addEventListener("click", closeSidebar);
+            }
+
+            backdrop.addEventListener("click", closeSidebar);
+
+            sidebar.querySelectorAll("a[href]").forEach(function (link) {
+                link.addEventListener("click", function () {
+                    if (mobileQuery.matches) closeSidebar();
+                });
+            });
+
+            document.addEventListener("keydown", function (event) {
+                if (event.key === "Escape") closeSidebar();
+            });
+
+            mobileQuery.addEventListener("change", function (event) {
+                if (!event.matches) closeSidebar();
+            });
+        });
+    </script>
+</body>
+</html>
