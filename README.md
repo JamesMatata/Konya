@@ -19,8 +19,7 @@ Open [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
 ## Documentation
 
-- [konya-documentation.md](konya-documentation.md) — technical reference (routes, models, AI pipeline)
-- [konya-submission.md](konya-submission.md) — hackathon submission write-up
+Technical and submission write-ups are kept locally (`konya-documentation.md`, `konya-submission.md`) and are not tracked in this repository.
 
 ## Tests
 

@@ -51,6 +51,10 @@ htmlcov/
 # Compiled translations (regenerate with compilemessages)
 *.mo
 
+# Project docs (local / submission only — not published to GitHub)
+konya-documentation.md
+konya-submission.md
+
 # Credentials
 *.pem
 *.key
