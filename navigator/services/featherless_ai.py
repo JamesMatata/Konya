@@ -674,6 +674,82 @@ def _interview_needs_more_questions(state):
     return bool(_get_askable_null_keys(checklist, criteria_meta))
 
 
+def _is_enrollment_question(key, criteria_meta=None):
+    text = _criterion_search_text(key, criteria_meta)
+    return any(
+        word in text
+        for word in (
+            "enrol",
+            "student",
+            "school",
+            "university",
+            "college",
+            "doctoral",
+            "graduate",
+            "accredited",
+            "secondary",
+        )
+    )
+
+
+def _is_employment_restriction_question(key, criteria_meta=None):
+    return _is_negated_eligibility_question(key, criteria_meta)
+
+
+def _parse_numbers_from_message(text):
+    """Extract numeric values from user text (counts, ages, income, etc.)."""
+    values = []
+    for match in re.finditer(r"[\$]?\s*([\d,]+(?:\.\d+)?)", text or ""):
+        raw = match.group(1).replace(",", "")
+        try:
+            number = float(raw)
+        except ValueError:
+            continue
+        if number >= 0:
+            values.append(number)
+    return values
+
+
+def _parse_numeric_threshold_rule(*parts):
+    """Return ('min', n), ('max', n), or ('range', low, high) from criterion copy."""
+    text = " ".join(str(part or "") for part in parts).lower().replace("_", " ")
+    if not text.strip():
+        return None
+
+    match = re.search(r"at least\s*[\$]?\s*([\d,]+(?:\.\d+)?)", text)
+    if match:
+        return ("min", float(match.group(1).replace(",", "")))
+
+    match = re.search(r"(?:minimum|min\.?)\s*(?:of\s*)?[\$]?\s*([\d,]+(?:\.\d+)?)", text)
+    if match:
+        return ("min", float(match.group(1).replace(",", "")))
+
+    match = re.search(
+        r"between\s*[\$]?\s*([\d,]+(?:\.\d+)?)\s*(?:and|-|to)\s*[\$]?\s*([\d,]+(?:\.\d+)?)",
+        text,
+    )
+    if match:
+        low = float(match.group(1).replace(",", ""))
+        high = float(match.group(2).replace(",", ""))
+        return ("range", min(low, high), max(low, high))
+
+    match = re.search(r"(?:under|below|less than)\s*[\$]?\s*([\d,]+(?:\.\d+)?)", text)
+    if match:
+        return ("max", float(match.group(1).replace(",", "")))
+
+    return None
+
+
+def _evaluate_number_against_rule(number, rule):
+    if rule[0] == "min":
+        return number >= rule[1]
+    if rule[0] == "max":
+        return number < rule[1]
+    if rule[0] == "range":
+        return rule[1] <= number <= rule[2]
+    return None
+
+
 def _infer_dependent_criteria_updates(checklist, criteria_meta=None):
     """Derive checklist updates when parent answers make child criteria irrelevant."""
     updates = {}
@@ -931,6 +1007,28 @@ def _evaluate_age_against_rule(age, rule):
     return None
 
 
+def _extract_age_candidates(text):
+    """Plausible ages from informal text, avoiding team counts and income amounts."""
+    primary = _parse_age_from_message(text)
+    if primary is not None:
+        return [primary]
+
+    text_lower = (text or "").lower()
+    ages = []
+    for match in re.finditer(r"\b(\d{1,3})\b", text or ""):
+        age = int(match.group(1))
+        if not (0 < age < 130):
+            continue
+        window = text_lower[max(0, match.start() - 24) : match.end() + 24]
+        if re.search(
+            r"(team of|we are|group of|members?|people|\$|usd|income|salary|earn)",
+            window,
+        ):
+            continue
+        ages.append(age)
+    return ages
+
+
 def _heuristic_checklist_updates(
     user_message,
     checklist,
@@ -1010,7 +1108,26 @@ def _heuristic_checklist_updates_from_text(
             ):
                 updates[key] = False
 
-    age = _parse_age_from_message(text)
+    age = None
+    age_candidates = _extract_age_candidates(text)
+    if age_candidates:
+        age = age_candidates[0]
+    if age is None and re.fullmatch(r"\d{1,3}", normalized):
+        age_keys = (
+            [focus_key]
+            if focus_key in null_keys
+            else ([short_answer_keys[0]] if len(short_answer_keys) == 1 else [])
+        )
+        for key in age_keys:
+            combined = _criterion_search_text(key, criteria_meta)
+            rule = _parse_age_rule_from_text(
+                _get_criterion_label(key, criteria_meta),
+                (criteria_meta.get(key) or {}).get("policy_source", ""),
+                key,
+            )
+            if rule or "age" in combined or re.search(r"\byears?\s*old\b", combined):
+                age = int(normalized)
+                break
     if age is not None:
         candidate_keys = list(null_keys)
         if focus_key in null_keys:
@@ -1023,6 +1140,11 @@ def _heuristic_checklist_updates_from_text(
             policy_source = meta.get("policy_source", "")
             combined = f"{key} {label} {policy_source}".lower()
             rule = _parse_age_rule_from_text(label, policy_source, key)
+            if not rule:
+                combined_spaced = combined.replace("_", " ")
+                match = re.search(r"(\d{1,3})\s*years?\s*old", combined_spaced)
+                if match:
+                    rule = ("min", int(match.group(1)))
             if not rule and "age" not in combined:
                 continue
             if not rule:
@@ -1032,7 +1154,7 @@ def _heuristic_checklist_updates_from_text(
                 updates[key] = evaluated
 
     if re.search(
-        r"(?:don'?t|do not) have (?:a )?team|no team|without a team|solo(?: for now)?|on my own for now|for now i don'?t have",
+        r"(?:don'?t|do not|dont) have (?:a )?team|no team|without a team|solo(?: for now)?|on my own for now|for now i don'?t have|going solo",
         text_lower,
     ):
         for key in null_keys:
@@ -1042,39 +1164,113 @@ def _heuristic_checklist_updates_from_text(
                 updates[key] = False
 
     if re.search(
-        r"\b(student|enrolled|enrolment|enrollment|university|college|school|multimedia)\b",
+        r"(?:team of\s*[2-5]|(?:we are|there are|group of|party of)\s*[2-5]|"
+        r"(?:yes|yeah|yep).{0,30}\bteam\b|forming (?:a )?team|have (?:a )?team of|"
+        r"(?:my|our)\s+team (?:has|is)|joining with (?:my )?friends?|"
+        r"[2-5]\s+(?:of us|members|people))",
         text_lower,
     ):
         for key in null_keys:
             if key in updates:
                 continue
-            criterion_text = _criterion_search_text(key, criteria_meta)
-            if any(
-                word in criterion_text
-                for word in (
-                    "enrol",
-                    "student",
-                    "school",
-                    "university",
-                    "college",
-                    "doctoral",
-                    "graduate",
-                    "accredited",
-                    "secondary",
-                )
-            ):
+            if _is_team_participation_question(key, criteria_meta):
+                updates[key] = True
+
+    team_members_phrase = re.search(
+        r"(?:all (?:team )?members|every(?:one| member)|each member|all of us).{0,40}"
+        r"(?:meet|eligible|qualif)|(?:members|teammates) (?:all )?(?:meet|qualif)",
+        text_lower,
+    )
+    yes_to_team_members = (
+        re.match(r"^yes\b", normalized)
+        and len(short_answer_keys) == 1
+        and _is_team_membership_question(short_answer_keys[0], criteria_meta)
+    )
+    if team_members_phrase or yes_to_team_members:
+        for key in null_keys:
+            if key in updates:
+                continue
+            if not _is_team_membership_question(key, criteria_meta):
+                continue
+            if team_members_phrase or (yes_to_team_members and short_answer_keys[0] == key):
                 updates[key] = True
 
     if re.search(
-        r"(not employed|unemployed|no(?:t)? employed|i'?m a student|i am a student|don'?t work|do not work|no i am not employed)",
+        r"\b(student|enrolled|enrolment|enrollment|university|college|school|multimedia|undergrad|postgrad)\b",
+        text_lower,
+    ) and not re.search(
+        r"(?:not enrolled|not a student|no longer (?:a )?student|graduated|finished (?:school|college|university)|dropped out|dropout|not in (?:school|college|university))",
         text_lower,
     ):
         for key in null_keys:
             if key in updates:
                 continue
-            criterion_text = _criterion_search_text(key, criteria_meta)
-            if "employ" in criterion_text and "not" in criterion_text:
+            if _is_enrollment_question(key, criteria_meta):
                 updates[key] = True
+
+    if re.search(
+        r"(?:not enrolled|not a student|no longer (?:a )?student|graduated|finished (?:school|college|university)|dropped out|dropout|not in (?:school|college|university))",
+        text_lower,
+    ):
+        for key in null_keys:
+            if key in updates:
+                continue
+            if _is_enrollment_question(key, criteria_meta):
+                updates[key] = False
+
+    if re.search(
+        r"(not employed|unemployed|no(?:t)? employed|i'?m a student|i am a student|don'?t work|do not work|no i am not employed|between jobs|jobless)",
+        text_lower,
+    ):
+        for key in null_keys:
+            if key in updates:
+                continue
+            if _is_employment_restriction_question(key, criteria_meta):
+                updates[key] = True
+
+    if not re.search(
+        r"(not employed|unemployed|no(?:t)? employed|don'?t work|do not work|jobless|between jobs)",
+        text_lower,
+    ) and re.search(
+        r"(?:employed|working|work(?:ing)? full.?time|job).{0,50}"
+        r"(?:ai|artificial intelligence|machine learning|data scienc|software eng|developer|ml engineer|tech field|tech company)"
+        r"|(?:ai|machine learning|data scienc|software eng|ml engineer|developer).{0,30}"
+        r"(?:engineer|developer|scientist|analyst|architect)"
+        r"|\bi am a (?:full.?time )?(?:software|ml|ai|data science|machine learning|data)\b",
+        text_lower,
+    ):
+        for key in null_keys:
+            if key in updates:
+                continue
+            if _is_employment_restriction_question(key, criteria_meta):
+                updates[key] = False
+
+    numbers = _parse_numbers_from_message(text)
+    if numbers:
+        for key in null_keys:
+            if key in updates:
+                continue
+            meta = criteria_meta.get(key) or {}
+            label = _get_criterion_label(key, criteria_meta)
+            policy_source = meta.get("policy_source", "")
+            combined = _criterion_search_text(key, criteria_meta)
+            if "age" in combined or re.search(r"\byears?\s*old\b", combined):
+                continue
+            rule = _parse_numeric_threshold_rule(label, policy_source, key)
+            if not rule:
+                continue
+            candidate_numbers = list(numbers)
+            if focus_key == key:
+                candidate_numbers = [numbers[-1]]
+            elif rule[0] == "min" and rule[1] >= 1000:
+                candidate_numbers = [n for n in numbers if n >= 200]
+            elif rule[0] in ("min", "range") and rule[1] < 100:
+                candidate_numbers = [n for n in numbers if n <= 150]
+            for number in candidate_numbers:
+                evaluated = _evaluate_number_against_rule(number, rule)
+                if evaluated is not None:
+                    updates[key] = evaluated
+                    break
 
     return updates
 

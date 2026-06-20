@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Konya{% endblock %}</title>
 
+    {% include "navigator/_favicon.html" %}
+
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <script>
         tailwind.config = {
@@ -200,7 +202,7 @@
             <div class="flex shrink-0 items-center justify-between gap-3 border-b border-gray-300 bg-[#F1F5F9] px-4 py-3 lg:hidden">
                 <div class="flex min-w-0 items-center gap-3">
                     {% include "navigator/_mobile_menu_button.html" %}
-                    <a href="{% url 'navigator:launchpad' %}" class="font-serif text-lg font-medium tracking-tight text-[#0F172A] no-underline">Konya</a>
+                    {% include "navigator/_brand_logo.html" with variant="light" size="sm" mode="icon" %}
                 </div>
                 {% include "navigator/_mobile_about_link.html" %}
             </div>

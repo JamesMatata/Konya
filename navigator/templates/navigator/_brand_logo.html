@@ -1,0 +1,33 @@
+{% load static i18n %}
+{# variant: dark = on navy sidebar | light = on pale backgrounds #}
+{# mode: full = wordmark | icon = square app mark #}
+{# size: sm | md | lg #}
+{% if linked|default:True %}
+<a
+    href="{% if href %}{{ href }}{% else %}{% url 'navigator:launchpad' %}{% endif %}"
+    class="inline-flex shrink-0 items-center no-underline transition-opacity hover:opacity-85 {{ wrapper_class }}"
+    aria-label="{% trans 'Konya home' %}"
+>
+{% endif %}
+    {% if mode == 'icon' %}
+    <img
+        src="{% static 'navigator/brand/konya_icon.ico' %}"
+        alt=""
+        class="object-contain {% if size == 'lg' %}h-10 w-10{% elif size == 'sm' %}h-7 w-7{% else %}h-8 w-8{% endif %} {{ img_class }}"
+        width="32"
+        height="32"
+        decoding="async"
+    >
+    {% else %}
+    <img
+        src="{% static 'navigator/brand/konya_logo.png' %}"
+        alt="{% trans 'Konya' %}"
+        class="object-contain object-left {% if size == 'lg' %}h-10{% elif size == 'sm' %}h-6{% else %}h-7{% endif %} w-auto max-w-[9rem] {% if variant == 'light' %}invert{% endif %} {{ img_class }}"
+        width="140"
+        height="40"
+        decoding="async"
+    >
+    {% endif %}
+{% if linked|default:True %}
+</a>
+{% endif %}
